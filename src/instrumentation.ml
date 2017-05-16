@@ -3,32 +3,26 @@ open Cil
 
 module E = Errormsg
 module S = Specification
+module CS = Cilspecification
 
-type spec_info = {
-  mutable spec : S.spec;
-  mutable enabled_props : S.atomic_prop list;
-}
+let cilSpec : CS.cil_prop_state = CS.empty
 
-let specInfo = {
-  spec = S.emptySpec;
-  enabled_props = [];
-}
+let trans_fun_str = "__ltl2ba_transition"
+let trans_fun = ref (makeVarinfo false "_dummy" voidType)
+
+let mkFunctionType (rt: typ) (args: (string * typ) list) : typ =
+  TFun (rt, (Some (List.map (fun a -> (fst a, snd a, [])) args)), false, [])
+
+let mkFunctionCall (func: varinfo) (loc: location) : stmt =
+    mkStmt (Instr [Call (None, Lval(Var func, NoOffset), [], loc)])
 
 let get_label_name (l: label) =
   match l with
     | Label (n, _, _) -> n
     | _ -> assert false
 
-let is_prop_parameter (var: varinfo) (prop: S.atomic_prop) =
-  let compare (p: S.param) =
-    match p with
-    | Global n -> var.vglob && n = var.vname
-    | Local (_, n) -> not var.vglob && n = var.vname
-  in
-  List.exists compare prop.params
-
 let props_to_update (var: varinfo) =
-  List.filter (is_prop_parameter var) specInfo.enabled_props
+  List.filter (fun p -> CS.is_parameter p var) (CS.get_enabled_props cilSpec)
 
 let is_true_label (l: label) =
   match l with
@@ -37,18 +31,18 @@ let is_true_label (l: label) =
 
 let add_starting_prop (l: label) =
   let newProps = List.filter
-      (fun p -> (S.get_prop_start p) = (get_label_name l))
-      specInfo.spec.props
+      (fun p -> (CS.get_start_label p) = (get_label_name l))
+      (CS.get_disabled_props cilSpec)
   in
-  specInfo.enabled_props <- List.append specInfo.enabled_props newProps;
+  CS.enable_props cilSpec newProps;
   newProps
 
 let remove_ending_prop (l:label) =
-  let endingProps, remaining = List.partition
-      (fun p -> (S.get_prop_end p) = (get_label_name l))
-      specInfo.enabled_props
+  let endingProps = List.filter
+      (fun p -> (CS.get_end_label p) = (get_label_name l))
+      (CS.get_enabled_props cilSpec)
   in
-  specInfo.enabled_props <- remaining;
+  CS.disable_props cilSpec endingProps;
   endingProps
 
 class addInstrumentationVisitor = object(self)
@@ -61,16 +55,23 @@ class addInstrumentationVisitor = object(self)
     let endingProps = List.map remove_ending_prop labels |> List.flatten in
     (* Set endingsProps to their default value right after this statement *)
 
-    List.iter (fun p -> p |> S.atomic_prop_to_string |> E.log "Starting %s\n") startingProps;
-    List.iter (fun p -> p |> S.atomic_prop_to_string |> E.log "Ending %s\n") endingProps;
+    List.iter (fun p -> p |> CS.cil_prop_to_string |> E.log "Starting %s\n") startingProps;
+    List.iter (fun p -> p |> CS.cil_prop_to_string |> E.log "Ending %s\n") endingProps;
+    List.iter (fun p -> p |> CS.cil_prop_to_string |> E.log "%s is enabled\n") (CS.get_enabled_props cilSpec);
+    List.iter (fun p -> p |> CS.cil_prop_to_string |> E.log "%s is disabled\n") (CS.get_disabled_props cilSpec);
 
-    DoChildren
+    let action s =
+      let c = mkFunctionCall !trans_fun locUnknown in
+      let b = mkBlock (c::[s]) in
+      mkStmt (Block b)
+    in
+    ChangeDoChildrenPost (s, action)
 
   method vinst (i: instr) =
     (
       match i with
       | Set ((Var v, NoOffset), _, l) -> E.log "%a : Set %a\n" d_loc l d_instr i;
-        List.iter (fun p -> p |> S.atomic_prop_to_string |> E.log "Needs to update %s\n")
+        List.iter (fun p -> p |> CS.cil_prop_to_string |> E.log "Needs to update %s\n")
         (props_to_update v);
       | _ -> ()
     );
@@ -87,5 +88,8 @@ let only_functions (o: fundec -> location -> unit) (g: global) =
   | _ -> ()
 
 let add_instrumentation (f: file) (spec: Specification.spec) =
-  specInfo.spec <- spec;
+  (* specInfo.spec <- spec; *)
+  let cs = CS.from_spec f spec in
+  cilSpec.disabled_props <- cs.disabled_props;
+  trans_fun := findOrCreateFunc f trans_fun_str (mkFunctionType voidType []);
   iterGlobals f (only_functions process_function)
