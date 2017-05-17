@@ -62,6 +62,7 @@ let searchLocalVar (f: file) (fname: string) (vname: string) =
 
 
 let collectFromSpecification (f: file) (s: S.spec) =
+  let open S in
   let truth_var_cil = H.create 10 in
   let prop_fun_cil = H.create 10 in
   let param_prop_cil = H.create 10 in
@@ -77,14 +78,15 @@ let collectFromSpecification (f: file) (s: S.spec) =
       | Some vcil -> H.add param_prop_cil var vcil
   in
   let collectFromProp (p: S.atomic_prop) =
-    let truth_var_name = "__ltl2ba_atomic_" ^ p.name in
+    let truth_var_name = "_ltl2ba_atomic_" ^ p.name in
     (match searchGlobVar f truth_var_name with
-    | None -> E.log "Missing %s" truth_var_name; assert(false)
+    | None -> E.s (E.error "Missing proposition truth variable %s"
+      truth_var_name)
     | Some v -> H.add truth_var_cil p.name v
     );
     if not (H.mem prop_fun_cil p.expr) then begin
       match searchFunction f p.expr with
-      | None -> assert(false)
+      | None -> E.s (E.error "Missing proposition defining function %s" p.expr)
       | Some v -> H.add prop_fun_cil p.expr v
     end;
     List.iter collectParam p.params

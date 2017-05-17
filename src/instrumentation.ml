@@ -8,7 +8,7 @@ module CS = Cilspecification
 
 let cilSpec : CS.cil_prop_state = CS.empty
 
-let trans_fun_str = "__ltl2ba_transition"
+let trans_fun_str = "_ltl2ba_transition"
 let trans_fun = ref (makeVarinfo false "_dummy" voidType)
 
 (* Return the list of properties that must be recomputed after the

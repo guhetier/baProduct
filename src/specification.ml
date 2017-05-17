@@ -1,5 +1,6 @@
 
 module J = Yojson.Basic
+module E = Errormsg
 
 open J.Util
 
@@ -63,4 +64,6 @@ let from_json (json: J.json) : spec =
   }
 
 let from_file (filename: string) : spec =
-  filename |> J.from_file |> from_json
+  let json = try J.from_file filename
+    with _ -> E.s (E.error "Couldn't parse the file %s" filename )
+  in from_json json
