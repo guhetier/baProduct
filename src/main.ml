@@ -21,7 +21,8 @@ let outputFile (f : C.file) : unit =
 
 let main () =
   let spec = Specification.from_file "test.spec" in
-  print_string spec.ltl;
+  print_string spec.Specification.ltl;
+  print_newline ();
   let cilFile = parseFile "test.c" in
   Instrumentation.add_instrumentation cilFile spec;
   outputFile cilFile

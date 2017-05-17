@@ -18,6 +18,8 @@ let trans_fun = ref (makeVarinfo false "_dummy" voidType)
 let props_to_update (var: varinfo) =
   List.filter (fun p -> CS.is_parameter p var) (CS.get_enabled_props cilSpec)
 
+(* Gather atomic propositions that start at a
+   given label and set them enabled *)
 let add_starting_prop (l: label) =
   let newProps = List.filter
       (fun p -> (CS.get_start_label p) = (get_label_name l))
@@ -26,6 +28,7 @@ let add_starting_prop (l: label) =
   CS.enable_props cilSpec newProps;
   newProps
 
+(* Gather atomic propositions that end at a given label and set them disabled *)
 let remove_ending_prop (l:label) =
   let endingProps = List.filter
       (fun p -> (CS.get_end_label p) = (get_label_name l))
@@ -34,24 +37,35 @@ let remove_ending_prop (l:label) =
   CS.disable_props cilSpec endingProps;
   endingProps
 
-let mkUpdateFunctionCall (prop: CS.cil_prop) (loc: location) =
-  mkFunctionCall prop.prop_fun (Some prop.truth_var) prop.prop_params loc
+(* Build the instruction to update
+   a truth value from the proposition function *)
+let mkUpdateFunctionCall (prop: CS.cil_prop) (loc: location)=
+  mkFunctionCall (CS.get_fun prop) (Some (CS.get_truth_var prop))
+    (CS.get_params prop) loc
 
+(* Build a call to the automaton transition function *)
 let mkTransitionFunctionCall (loc: location) =
    mkFunctionCall !trans_fun None [] loc
 
+(* Build the instruction that set a truth value to its default value *)
 let mkSetToDefaultInstr (prop: CS.cil_prop) (loc: location) =
-  Set((Var(prop.truth_var), NoOffset), (mkBool prop.default_val), loc)
+  Set((Var((CS.get_truth_var prop)), NoOffset),
+      (mkBool (CS.get_default prop)), loc)
 
+(* This visitor instrument the code to build the product with a Büchi automaton.
+   It updates truth values every time their value may change and call the
+   automaton transition function
+*)
 class addInstrumentationVisitor = object(self)
   inherit nopCilVisitor
 
+  (* When reaching a label, a proposition may be enabled / disabled.
+     Update property status, and insert code to update truth value
+  *)
   method vstmt (s: stmt) =
     let labels = List.filter is_true_label s.labels in
     let startingProps = List.map add_starting_prop labels |> List.flatten in
-    (* Set startingProps to their expr value right before this statement *)
     let endingProps = List.map remove_ending_prop labels |> List.flatten in
-    (* Set endingsProps to their default value right after this statement *)
 
     List.iter (fun p -> p |> CS.cil_prop_to_string |> E.log "Starting %s\n")
       startingProps;
@@ -80,6 +94,8 @@ class addInstrumentationVisitor = object(self)
       in
       ChangeDoChildrenPost (s, action)
 
+  (* If an instruction may change the truth value of a proposition, insert
+     code to update the truth value *)
   method vinst (i: instr) =
       match i with
       | Set ((Var v, NoOffset), _, loc) ->
@@ -109,8 +125,7 @@ let only_functions (o: fundec -> location -> unit) (g: global) =
   | _ -> ()
 
 let add_instrumentation (f: file) (spec: Specification.spec) =
-  (* specInfo.spec <- spec; *)
   let cs = CS.from_spec f spec in
-  cilSpec.disabled_props <- cs.disabled_props;
+  cilSpec.CS.disabled_props <- cs.CS.disabled_props;
   trans_fun := findOrCreateFunc f trans_fun_str (mkFunctionType voidType []);
   iterGlobals f (only_functions process_function)

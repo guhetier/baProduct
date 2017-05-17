@@ -34,11 +34,26 @@ let cil_prop_to_string (p: cil_prop) =
   p.name
 
 (* Getters *)
+let get_name (p: cil_prop) =
+  p.name
+
 let get_start_label (p: cil_prop) =
   p.start_label
 
 let get_end_label (p: cil_prop) =
   p.end_label
+
+let get_fun (p: cil_prop) =
+  p.prop_fun
+
+let get_params (p: cil_prop) =
+  p.prop_params
+
+let get_default (p: cil_prop) =
+  p.default_val
+
+let get_truth_var (p: cil_prop) =
+  p.truth_var
 
 (* Builder *)
 let make_cil_prop name sl el pf pps def tv =
@@ -94,7 +109,9 @@ let disable_props (ps: cil_prop_state) (s: cil_prop list) =
   ps.enabled_props <- List.filter to_keep ps.enabled_props;
   ps.disabled_props <- List.append ps.disabled_props s
 
+(* Build a cil_prop from a specification atomic_prop *)
 let from_atomic_prop (truth_var, prop_fun, prop_params) (ap: S.atomic_prop) =
+  let open S in
   let pf = try H.find prop_fun ap.expr with Not_found -> assert false in
   let tv = try H.find truth_var ap.name with Not_found -> assert false in
   let pps = List.map (fun var ->
@@ -103,7 +120,9 @@ let from_atomic_prop (truth_var, prop_fun, prop_params) (ap: S.atomic_prop) =
   make_cil_prop ap.name (fst ap.valid_span)
     (snd ap.valid_span) pf pps ap.default_val tv
 
+(* Build a cil spec from a specification *)
 let from_spec (f: C.file) (spec: S.spec) : cil_prop_state =
+  let open Specification in
   let collected = CS.collectFromSpecification f spec in
   let props = List.map (from_atomic_prop collected) spec.props in
   {
