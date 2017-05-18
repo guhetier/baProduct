@@ -18,8 +18,10 @@ type cil_prop = {
                            active span *)
   prop_params : C.varinfo list; (* the parameters of `prop_fun` *)
   default_val : bool; (* the value of the proposition out of the active span *)
-  truth_var : C.varinfo (* the global variable storing the current truth value
+  truth_var : C.varinfo; (* the global variable storing the current truth value
                            of the proposition *)
+  state_var : C.varinfo; (* the global variable storing whether the proposition is
+                            currently in its valid zone *)
 }
 
 let is_parameter (p: cil_prop) (v: C.varinfo) =
@@ -55,8 +57,11 @@ let get_default (p: cil_prop) =
 let get_truth_var (p: cil_prop) =
   p.truth_var
 
+let get_state_var (p: cil_prop) =
+  p.state_var
+
 (* Builder *)
-let make_cil_prop name sl el pf pps def tv =
+let make_cil_prop name sl el pf pps def tv sv =
   {
     name = name;
     start_label = sl;
@@ -65,6 +70,7 @@ let make_cil_prop name sl el pf pps def tv =
     prop_params = pps;
     default_val = def;
     truth_var = tv;
+    state_var = sv;
   }
 
 
@@ -110,15 +116,16 @@ let disable_props (ps: cil_prop_state) (s: cil_prop list) =
   ps.disabled_props <- List.append ps.disabled_props s
 
 (* Build a cil_prop from a specification atomic_prop *)
-let from_atomic_prop (truth_var, prop_fun, prop_params) (ap: S.atomic_prop) =
+let from_atomic_prop (truth_var, state_var, prop_fun, prop_params) (ap: S.atomic_prop) =
   let open S in
   let pf = try H.find prop_fun ap.expr with Not_found -> assert false in
   let tv = try H.find truth_var ap.name with Not_found -> assert false in
+  let sv = try H.find state_var ap.name with Not_found -> assert false in
   let pps = List.map (fun var ->
       try H.find prop_params var with Not_found -> assert false)
       ap.params in
   make_cil_prop ap.name (fst ap.valid_span)
-    (snd ap.valid_span) pf pps ap.default_val tv
+    (snd ap.valid_span) pf pps ap.default_val tv sv
 
 (* Build a list of cil propositions from a specification *)
 let from_spec (f: C.file) (spec: S.spec) : cil_prop list=

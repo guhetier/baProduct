@@ -19,13 +19,29 @@ let outputFile (filename: string option) (f : C.file) : unit =
   C.dumpFile (!C.printerForMaincil) c output_file f;
   if filename <> None then close_out c
 
+(* --- Dirty insertion of _ltl2ba_result, just to be sure the function is not deleted *)
+let insert_end_main rcal g =
+  match g with
+  | C.GFun (f, _) when f.C.svar.C.vname = "main" ->
+    f.C.sbody.C.bstmts <- f.C.sbody.C.bstmts @ [C.mkStmtOneInstr rcal]
+  | _ -> ()
+
+let add_result f =
+  let frtype = Baproductutils.mkFunctionType C.voidType [] in
+  let fr = C.findOrCreateFunc f "_ltl2ba_result" frtype in
+  let rcall = Baproductutils.mkFunctionCall fr None [] C.locUnknown in
+  C.iterGlobals f (insert_end_main rcall)
+
+(* ---- *)
+
 let main () =
   O.arg_parse ();
   let spec = Specification.from_file !O.specFile in
-  print_string spec.Specification.ltl;
-  print_newline ();
   let cilFile = parseFile !O.srcFile in
-  Instrumentation.add_instrumentation cilFile spec;
+  let cil_props = Cilspecification.from_spec cilFile spec in
+  Instrumentation.add_instrumentation cilFile cil_props;
+  add_result cilFile;
+  Rmtmps.removeUnusedTemps cilFile;
   outputFile !O.dstFile cilFile
 
 

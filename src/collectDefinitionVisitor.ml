@@ -64,6 +64,7 @@ let searchLocalVar (f: file) (fname: string) (vname: string) =
 let collectFromSpecification (f: file) (s: S.spec) =
   let open S in
   let truth_var_cil = H.create 10 in
+  let state_var_cil = H.create 10 in
   let prop_fun_cil = H.create 10 in
   let param_prop_cil = H.create 10 in
 
@@ -78,18 +79,26 @@ let collectFromSpecification (f: file) (s: S.spec) =
       | Some vcil -> H.add param_prop_cil var vcil
   in
   let collectFromProp (p: S.atomic_prop) =
+    (* Collect the truth variable for the proposition *)
     let truth_var_name = "_ltl2ba_atomic_" ^ p.name in
     (match searchGlobVar f truth_var_name with
     | None -> E.s (E.error "Missing proposition truth variable %s"
       truth_var_name)
     | Some v -> H.add truth_var_cil p.name v
     );
+    (* Collect the function defining the proposition value *)
     if not (H.mem prop_fun_cil p.expr) then begin
       match searchFunction f p.expr with
       | None -> E.s (E.error "Missing proposition defining function %s" p.expr)
       | Some v -> H.add prop_fun_cil p.expr v
     end;
-    List.iter collectParam p.params
+    (* Collect the proposition parameters *)
+    List.iter collectParam p.params;
+    (* Create a state variable for the proposition *)
+    let sv = makeGlobalVar ("_ltl2ba_active_" ^ p.name) (TInt(IBool, [])) in
+    let initsv = {init = Some (makeZeroInit (TInt(IBool, [])))} in
+    f.globals <- GVar(sv, initsv, locUnknown)::f.globals;
+    H.add state_var_cil p.name sv
   in
   List.iter collectFromProp s.props;
-  (truth_var_cil, prop_fun_cil, param_prop_cil)
+  (truth_var_cil, state_var_cil, prop_fun_cil, param_prop_cil)
