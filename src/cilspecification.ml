@@ -120,12 +120,8 @@ let from_atomic_prop (truth_var, prop_fun, prop_params) (ap: S.atomic_prop) =
   make_cil_prop ap.name (fst ap.valid_span)
     (snd ap.valid_span) pf pps ap.default_val tv
 
-(* Build a cil spec from a specification *)
-let from_spec (f: C.file) (spec: S.spec) : cil_prop_state =
+(* Build a list of cil propositions from a specification *)
+let from_spec (f: C.file) (spec: S.spec) : cil_prop list=
   let open Specification in
   let collected = CS.collectFromSpecification f spec in
-  let props = List.map (from_atomic_prop collected) spec.props in
-  {
-    disabled_props = props;
-    enabled_props = []
-  }
+  List.map (from_atomic_prop collected) spec.props

@@ -11,6 +11,25 @@ let cilSpec : CS.cil_prop_state = CS.empty
 let trans_fun_str = "_ltl2ba_transition"
 let trans_fun = ref (makeVarinfo false "_dummy" voidType)
 
+(****************** Build-helper *******************************)
+
+(* Build the instruction to update
+   a truth value from the proposition function *)
+let mkUpdateFunctionCall (prop: CS.cil_prop) (loc: location)=
+  mkFunctionCall (CS.get_fun prop) (Some (CS.get_truth_var prop))
+    (CS.get_params prop) loc
+
+(* Build a call to the automaton transition function *)
+let mkTransitionFunctionCall (loc: location) =
+   mkFunctionCall !trans_fun None [] loc
+
+(* Build the instruction that set a truth value to its default value *)
+let mkSetToDefaultInstr (prop: CS.cil_prop) (loc: location) =
+  Set((Var((CS.get_truth_var prop)), NoOffset),
+      (mkBool (CS.get_default prop)), loc)
+
+(**************** Prop state manipulation functions *************)
+
 (* Return the list of properties that must be recomputed after the
    modification of the variable `var`.
    They are the properties that depends on `var` and are enabled.
@@ -37,20 +56,7 @@ let remove_ending_prop (l:label) =
   CS.disable_props cilSpec endingProps;
   endingProps
 
-(* Build the instruction to update
-   a truth value from the proposition function *)
-let mkUpdateFunctionCall (prop: CS.cil_prop) (loc: location)=
-  mkFunctionCall (CS.get_fun prop) (Some (CS.get_truth_var prop))
-    (CS.get_params prop) loc
-
-(* Build a call to the automaton transition function *)
-let mkTransitionFunctionCall (loc: location) =
-   mkFunctionCall !trans_fun None [] loc
-
-(* Build the instruction that set a truth value to its default value *)
-let mkSetToDefaultInstr (prop: CS.cil_prop) (loc: location) =
-  Set((Var((CS.get_truth_var prop)), NoOffset),
-      (mkBool (CS.get_default prop)), loc)
+(*************** Instrumentation visitor ********************)
 
 (* This visitor instrument the code to build the product with a Büchi automaton.
    It updates truth values every time their value may change and call the
@@ -124,8 +130,7 @@ let only_functions (o: fundec -> location -> unit) (g: global) =
   | GFun (fd, l) -> o fd l
   | _ -> ()
 
-let add_instrumentation (f: file) (spec: Specification.spec) =
-  let cs = CS.from_spec f spec in
-  cilSpec.CS.disabled_props <- cs.CS.disabled_props;
+let add_instrumentation (f: file) (cs: CS.cil_prop list) =
+  cilSpec.CS.disabled_props <- cs;
   trans_fun := findOrCreateFunc f trans_fun_str (mkFunctionType voidType []);
   iterGlobals f (only_functions process_function)
