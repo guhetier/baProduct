@@ -31,8 +31,13 @@ let instrFun = {
 (* Build the instruction to update
    a truth value from the proposition function *)
 let mkUpdateFunctionCall (prop: CS.cil_prop) (loc: location)=
-  mkFunctionCall (CS.get_fun prop) (Some (CS.get_truth_var prop))
-    (CS.get_params prop) loc
+  let argLVal = List.map (fun v -> Lval(Mem (Lval(Var v, NoOffset)), NoOffset))
+  (CS.get_pointer_params prop) in
+  Call (
+    Some (Var (CS.get_truth_var prop), NoOffset),
+    Lval(Var (CS.get_fun prop), NoOffset),
+    argLVal,
+    loc)
 
 (* Build a call to the automaton transition function *)
 let mkTransitionFunctionCall (loc: location) =
@@ -45,6 +50,10 @@ let mkSetToDefaultInstr (prop: CS.cil_prop) (loc: location) =
 
 let mkSetPropState (prop: CS.cil_prop) (loc: location) (s: bool) =
   Set((Var((CS.get_state_var prop)), NoOffset), mkBool s, loc)
+
+let mkSetPointer (var: CS.cil_prop_param) (loc: location) =
+  E.log "mkSetPointer";
+  Set((Var var.pointer, NoOffset), mkAddrOf (Var var.var, NoOffset), loc)
 
 (**************** Prop state manipulation functions *************)
 
@@ -116,6 +125,9 @@ class addInstrumentationVisitor = object(self)
         List.map (fun p -> mkUpdateFunctionCall p loc) startingProps in
       let init_end =
         List.map (fun p -> mkSetToDefaultInstr p loc) endingProps in
+      let init_var_pointer =
+        let vars = List.flatten (List.map (fun p -> p.CS.prop_params) startingProps) in
+        List.map (fun p -> mkSetPointer p loc) vars in
       let set_state_true =
         List.map (fun p -> mkSetPropState p loc true) startingProps in
       let set_state_false =
@@ -126,8 +138,8 @@ class addInstrumentationVisitor = object(self)
 
       let action (s: stmt) =
         let instrStmt = mkStmt (Instr (
-            [tr; ae] |> (@) set_state_true |> (@) init_start |> (@)
-            set_state_false |> (@) init_end |> (@) [ab]))
+            [tr; ae] |> (@) set_state_true |> (@) init_start |> (@) init_var_pointer
+            |> (@) set_state_false |> (@) init_end |> (@) [ab]))
         in
         let b = mkBlock (instrStmt::[s]) in
         mkStmt (Block b)

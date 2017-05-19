@@ -6,6 +6,13 @@ module H = Hashtbl
 module S = Specification
 module CS = CollectDefinitionVisitor
 
+(* `cil_prop_param` represent a variable used as parameter in
+   a proposition *)
+type cil_prop_param = {
+  var : C.varinfo; (* the variable used as a parameter *)
+  pointer : C.varinfo; (* a global pointer containing the address of the variable *)
+}
+
 (* `cil_prop` represents the link between an atomic proposition
    from the specification and cil constructs *)
 type cil_prop = {
@@ -16,7 +23,7 @@ type cil_prop = {
                            property *)
   prop_fun : C.varinfo; (* the function giving the proposition value in the
                            active span *)
-  prop_params : C.varinfo list; (* the parameters of `prop_fun` *)
+  prop_params : cil_prop_param list; (* the parameters of `prop_fun` *)
   default_val : bool; (* the value of the proposition out of the active span *)
   truth_var : C.varinfo; (* the global variable storing the current truth value
                            of the proposition *)
@@ -27,7 +34,7 @@ type cil_prop = {
 let is_parameter (p: cil_prop) (v: C.varinfo) =
   let open C in
   let equal x y =
-    x.vid = y.vid
+    x.vid = y.var.vid
   in
   List.exists (equal v) p.prop_params
 
@@ -48,8 +55,11 @@ let get_end_label (p: cil_prop) =
 let get_fun (p: cil_prop) =
   p.prop_fun
 
-let get_params (p: cil_prop) =
-  p.prop_params
+let get_var_params (p: cil_prop) =
+  List.map (fun x -> x.var) p.prop_params
+
+let get_pointer_params (p: cil_prop) =
+  List.map (fun x -> x.pointer) p.prop_params
 
 let get_default (p: cil_prop) =
   p.default_val
@@ -122,7 +132,8 @@ let from_atomic_prop (truth_var, state_var, prop_fun, prop_params) (ap: S.atomic
   let tv = try H.find truth_var ap.name with Not_found -> assert false in
   let sv = try H.find state_var ap.name with Not_found -> assert false in
   let pps = List.map (fun var ->
-      try H.find prop_params var with Not_found -> assert false)
+      let v, vp = try H.find prop_params var with Not_found -> assert false
+      in {var = v; pointer = vp})
       ap.params in
   make_cil_prop ap.name (fst ap.valid_span)
     (snd ap.valid_span) pf pps ap.default_val tv sv

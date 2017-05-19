@@ -70,13 +70,18 @@ let collectFromSpecification (f: file) (s: S.spec) =
 
   let collectParam (var: S.param) =
     if not (H.mem param_prop_cil var) then
-      let vopt = match var with
-      | Global(vname) -> searchGlobVar f vname
-      | Local (fname, vname) -> searchLocalVar f fname vname
+      let vopt, pname = match var with
+      | Global(vname) -> searchGlobVar f vname, "_ltl2ba_pointer_" ^ vname
+      | Local (fname, vname) -> searchLocalVar f fname vname,
+                                "_ltl2ba_pointer_" ^ fname ^ "_" ^ vname
       in
       match vopt with
       | None -> assert false
-      | Some vcil -> H.add param_prop_cil var vcil
+      | Some vcil ->
+        let vpointer = makeGlobalVar (pname) (TPtr(vcil.vtype, [])) in
+        let initvp = {init = Some (makeZeroInit vpointer.vtype)} in
+        f.globals <- GVar(vpointer, initvp, locUnknown)::f.globals;
+        H.add param_prop_cil var (vcil, vpointer)
   in
   let collectFromProp (p: S.atomic_prop) =
     (* Collect the truth variable for the proposition *)
