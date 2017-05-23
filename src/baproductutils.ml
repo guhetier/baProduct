@@ -31,3 +31,9 @@ let get_label_name (l: label) =
 
 let mkBool (b: bool) =
   kinteger IBool (if b then 1 else 0)
+
+(* Filter global to apply `o` on functions only *)
+let only_functions (o: fundec -> location -> unit) (g: global) =
+  match g with
+  | GFun (fd, l) -> o fd l
+  | _ -> ()
