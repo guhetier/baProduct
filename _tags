@@ -1,0 +1,2 @@
+true: package(yojson), package(cil), package(str)
+true: bin_annot
