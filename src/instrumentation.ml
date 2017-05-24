@@ -4,6 +4,7 @@ open Baproductutils
 
 module E = Errormsg
 module CS = Cilspecification
+module O = Option
 
 (******************* Global parameters ****************************)
 let cilSpec : CS.cil_prop_state = CS.empty
@@ -16,9 +17,11 @@ let dummy_fun = makeVarinfo false "_dummy" voidType
 
 (* Function used for instrumentation *)
 type instr_fun = {
-  mutable transition : varinfo;   (* Transition function in the Büchi automaton *)
-  mutable atomic_begin : varinfo; (* Begin of an atomic block for the model checker *)
-  mutable atomic_end : varinfo;   (* End of an atomic block for the model checker *)
+  mutable transition : varinfo; (* Transition function in the Büchi automaton *)
+  mutable atomic_begin : varinfo; (* Begin of an atomic block for the model
+                                     checker *)
+  mutable atomic_end : varinfo; (* End of an atomic block for the model
+                                   checker *)
 }
 
 let instrFun = {
@@ -130,6 +133,24 @@ class instrumentZoneChangeVisitor = object(self)
     let startingProps = List.map add_starting_prop labels |> List.flatten in
     let endingProps = List.map remove_ending_prop labels |> List.flatten in
 
+    if !O.verbose && labels <> [] then begin
+      let ls = String.concat ", " (List.map (fun l -> get_label_name l) s.labels)
+      in
+      E.log "%a : Label %s reached.\n" d_loc (get_stmtLoc s.skind) ls;
+      if startingProps <> [] then begin
+        let ps = String.concat ", "
+            (List.map (fun p -> CS.get_name p) startingProps)
+        in
+        E.log "> Proposition %s is entering their validity zone.\n" ps;
+      end;
+      if endingProps <> [] then begin
+        let pe = String.concat ", "
+            (List.map (fun p -> CS.get_name p) endingProps)
+        in
+        E.log "> Proposition %s is exiting their validity zone.\n" pe
+      end
+    end;
+
     (* Build the instruction to insert before the statement *)
     match startingProps, endingProps with
     | [], [] -> DoChildren
@@ -219,9 +240,11 @@ class instrumentVarChangeVisitor = object(self)
     | Instr ll ->
       nstmts <- [];
       let action s =
-        match nstmts with
+        let ns = match nstmts with
         | [a] -> a
         | _ -> mkStmt (Block (mkBlock (List.rev nstmts)))
+        in ns.labels <- s.labels;
+        ns
       in ChangeDoChildrenPost (s, action)
     | _ -> DoChildren
 
@@ -243,12 +266,30 @@ class instrumentVarChangeVisitor = object(self)
           inactive_props_to_update v
         else []
       in
+
       if active_prop_to_update = [] && inactive_prop_to_update = [] then begin
         (* No update needed : just copy the instruction *)
         self#addInst i;
         SkipChildren
       end
       else begin
+
+        if !O.verbose then begin
+          E.log "%a : Assignation to variable %s.\n" d_loc (loc) v.vname;
+          if active_prop_to_update <> [] then begin
+            let ps = String.concat ", "
+                (List.map (fun p -> CS.get_name p) active_prop_to_update)
+            in
+            E.log "> Property %s will surely be updated.\n" ps;
+          end;
+          if inactive_prop_to_update <> [] then begin
+            let pm = String.concat ", "
+                (List.map (fun p -> CS.get_name p) inactive_prop_to_update)
+            in
+            E.log "> Property %s will maybe be updated.\n" pm;
+          end
+        end;
+
         (* Updates are needed :
            - create calls to update functions
            - set an atomic block around the instruction to enforce the
@@ -294,9 +335,13 @@ let process_function (cs: CS.cil_prop list) (fd: fundec) (l: location) : unit =
      before its end. It is essential for the second visitor to compute active
      zone correctly.
   *)
-  if cilSpec.CS.enabled_props <> [] then
-       E.s (E.error "Active zone for atomic propositions XXX TODO have been \
-                     opened in %a but have not been closed");
+  if (CS.get_enabled_props cilSpec) <> [] then begin
+    let pnames = List.fold_left (fun ss p -> (CS.get_name p) ^ " " ^ ss)
+        "" (CS.get_enabled_props cilSpec)
+    in E.s (E.error "Active zone for atomic propositions %s have been \
+                  opened in %s but have not been closed" pnames fd.svar.vname)
+  end;
+
   let visVar = new instrumentVarChangeVisitor in
   ignore(visitCilFunction visVar fd)
 
