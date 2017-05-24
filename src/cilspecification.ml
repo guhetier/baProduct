@@ -13,6 +13,13 @@ type cil_prop_param = {
   pointer : C.varinfo; (* a global pointer containing the address of the variable *)
 }
 
+(* Getters *)
+let get_pointer (p: cil_prop_param) =
+  p.pointer
+
+let get_var (p: cil_prop_param) =
+  p.var
+
 (* `cil_prop` represents the link between an atomic proposition
    from the specification and cil constructs *)
 type cil_prop = {

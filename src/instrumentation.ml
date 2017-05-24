@@ -62,7 +62,7 @@ let mkSetPropState (prop: CS.cil_prop) (loc: location) (s: bool) =
   Set((Var((CS.get_state_var prop)), NoOffset), mkBool s, loc)
 
 let mkSetPointer (var: CS.cil_prop_param) (loc: location) =
-  Set((Var var.pointer, NoOffset), mkAddrOf (Var var.var, NoOffset), loc)
+  Set((Var (CS.get_pointer var), NoOffset), mkAddrOf (Var (CS.get_var var), NoOffset), loc)
 
 (**************** Prop state manipulation functions *************)
 
@@ -274,12 +274,10 @@ let process_function (cs: CS.cil_prop list) (fd: fundec) (l: location) : unit =
   if cilSpec.CS.enabled_props <> [] then
        E.s (E.error "Active zone for atomic propositions XXX TODO have been opened in\
                      %a but have not been closed");
-
   let visVar = new instrumentVarChangeVisitor in
   ignore(visitCilFunction visVar fd)
 
 let add_instrumentation (f: file) (cs: CS.cil_prop list) =
-
   (* Create varinfo for function used in instrumentation *)
   instrFun.transition <- findOrCreateFunc f transition_fun_str (mkFunctionType voidType []);
   instrFun.atomic_begin <- findOrCreateFunc f atomic_begin_fun_str (mkFunctionType voidType []);
