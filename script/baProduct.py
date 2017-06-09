@@ -23,6 +23,7 @@ def main():
 
     ltl_formula = spec["ltl"]
     ltl_formula = ltl_formula.replace("G", "[]").replace("F", "<>")
+    ltl_formula = "! ( " + ltl_formula + " )"
 
 
     with open("merge.c", 'w+') as fmerge:
