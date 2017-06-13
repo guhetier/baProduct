@@ -5,12 +5,15 @@ module S = Specification
 
 (********* Insert a call to the result function at the end of the main *********)
 
-class insert_result_visitor (fresult) = object(self)
+class insert_result_visitor (f_to_insert) = object(self)
   inherit nopCilVisitor
   method vstmt s =
     match s.skind with
-    | Return _ -> let rc = mkFunctionCall fresult None [] (get_stmtLoc s.skind) in
-      let ns = Block (mkBlock [mkStmtOneInstr rc; s]) |> mkStmt in
+    | Return _ ->
+      let icalls = List.map
+          (fun f -> mkFunctionCall f None [] (locUnknown))
+          f_to_insert in
+      let ns = Block (mkBlock [mkStmt (Instr icalls); s]) |> mkStmt in
       ChangeTo ns
     | _ -> DoChildren
 end
@@ -25,9 +28,10 @@ let insert_end_main rcal g =
 
 
 let add_result f =
-  let frtype = Baproductutils.mkFunctionType voidType [] in
-  let fr = findOrCreateFunc f "_ltl2ba_result" frtype in
-  iterGlobals f (insert_end_main fr)
+  let f_atomic_b = findOrCreateFunc f "__ESBMC_atomic_begin" (mkFunctionType voidType []) in
+  let f_atomic_e = findOrCreateFunc f "__ESBMC_atomic_end" (mkFunctionType voidType []) in
+  let f_res = findOrCreateFunc f "_ltl2ba_result" (mkFunctionType voidType []) in
+  iterGlobals f (insert_end_main [f_atomic_b; f_res; f_atomic_e])
 
 
 (********* Initialize proposition truth value variables **********)
