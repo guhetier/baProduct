@@ -1,2 +1,2 @@
-true: package(yojson), package(cil), package(str)
+true: package(yojson), package(cil), package(str), package(ocamlgraph)
 true: bin_annot

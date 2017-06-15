@@ -20,7 +20,7 @@ debug: 		sanity
 
 sanity:
 # check that packages can be found
-			ocamlfind query yojson
+			ocamlfind query yojson ocamlgraph
 
 test: 		native
 			./main.native -i test.c -s test.spec -o out.c
