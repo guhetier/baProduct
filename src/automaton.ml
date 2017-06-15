@@ -5,18 +5,17 @@ module H = Hashtbl
 
 open J.Util
 
-
-type
+type node_t = {id: int; final: bool}
 module Node = struct
-  type t = {id: int; final: bool}
-  let compare = Pervasives.compare
+  type t = node_t
+  let compare v1 v2 = Pervasives.compare v1.id v2.id
   let equal v1 v2 = v1.id = v2.id
   let hash v = Hashtbl.hash v.id
 end
 
-
+type edge_t = {pos: string list; neg: string list}
 module Edge = struct
-  type t = {pos: string list; neg: string list}
+  type t = edge_t
   let compare = Pervasives.compare
   let default = {pos = []; neg = []}
 end
@@ -24,6 +23,18 @@ end
 
 module A = Graph.Persistent.Digraph.ConcreteBidirectionalLabeled(Node)(Edge)
 
+module Dot = Graph.Graphviz.Dot(struct
+   include A
+   let edge_attributes (a, e, b) =
+     let l = Baproductutils.set_to_c_string e.pos e.neg in
+     [`Label l; `Color 4711]
+   let default_edge_attributes _ = []
+   let get_subgraph _ = None
+   let vertex_attributes _ = [`Shape `Circle]
+   let vertex_name v = string_of_int v.id
+   let default_vertex_attributes _ = []
+  let graph_attributes _ = []
+end)
 
 type automaton = {
   nb_states: int;
@@ -36,21 +47,21 @@ type automaton = {
 
 let json_to_edge (json: J.json): Edge.t * Node.t =
   {
-    Edge.pos = List.map to_string (json |> member "pos" |> to_list);
-    Edge.neg = List.map to_string (json |> member "neg" |> to_list);
+    pos = List.map to_string (json |> member "pos" |> to_list);
+    neg = List.map to_string (json |> member "neg" |> to_list);
   },
   {
-    Node.id = json |> member "dest" |> to_int;
-    Node.final = false; (* Node are identified by their id only, so final
-                           if not important here : all nodes have already been
-                           inserted with correct values when adding the edges *)
+    id = json |> member "dest" |> to_int;
+    final = false; (* Node are identified by their id only, so final
+                      if not important here : all nodes have already been
+                      inserted with correct values when adding the edges *)
   }
 
 
 let json_to_state (json: J.json): Node.t =
   {
-    Node.id = json |> member "label" |> to_int;
-    Node.final = json |> member "final" |> to_bool;
+    id = json |> member "label" |> to_int;
+    final = json |> member "final" |> to_bool;
   }
 
 
@@ -58,8 +69,8 @@ let json_to_state_trans (json: J.json): A.edge list =
   let vid = json |> member "label" |> to_int in
   let edges = List.map json_to_edge (json |> member "trans" |> to_list) in
   let v = {
-    Node.id = vid;
-    Node.final = json |> member "final" |> to_bool;
+    id = vid;
+    final = json |> member "final" |> to_bool;
   } in
   List.map (fun (e,d) -> v, e, d) edges
 
@@ -81,10 +92,10 @@ let from_json (json: J.json) : automaton =
   let graph = List.fold_left A.add_edge_e graph edges in
 
   (* Get the first node back *)
-  let init_id = json |> member "init_label" |> to_int in
+  let init_id = json |> member "init_state" |> to_int in
   let init_state = try
       A.iter_vertex
-        (fun v -> if v.Node.id = init_id then raise (NodeFound v)) graph;
+        (fun v -> if v.id = init_id then raise (NodeFound v)) graph;
       raise Not_found;
     with | NodeFound v -> v
          | Not_found -> E.s (E.error "Initial node not found")
