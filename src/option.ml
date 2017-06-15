@@ -7,6 +7,12 @@ let dstFile = ref None
 let verbose = ref false
 let debug = ref false
 
+let checker_assert = ref "__ESBMC_assert"
+let checker_assume = ref "__ESBMC_assume"
+let checker_atomic_begin = ref "__ESBMC_atomic_begin"
+let checker_atomic_end = ref "__ESBMC_atomic_end"
+let checker_non_det = ref "nondet_uint"
+
 let argSpec = [
   ("-i", A.Set_string srcFile, "The file to instrument");
   ("-s", A.Set_string specFile, "The specification used for instrumentation");
