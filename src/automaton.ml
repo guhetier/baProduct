@@ -20,8 +20,12 @@ module Edge = struct
   let default = {pos = []; neg = []}
 end
 
+module A = Graph.Persistent.Digraph.ConcreteLabeled(Node)(Edge)
 
-module A = Graph.Persistent.Digraph.ConcreteBidirectionalLabeled(Node)(Edge)
+module VSet = Set.Make(Node)
+module VSetSet = Set.Make(VSet)
+
+(* module A = Graph.Persistent.Digraph.ConcreteBidirectionalLabeled(Node)(Edge) *)
 
 module Dot = Graph.Graphviz.Dot(struct
    include A
@@ -36,14 +40,15 @@ module Dot = Graph.Graphviz.Dot(struct
   let graph_attributes _ = []
 end)
 
+module OperAuto = Graph.Oper.P(A)
+
 type automaton = {
   nb_states: int;
   nb_sym: int;
-  symbols: string list;
+  symbols: (string, int) H.t;
   init_state: Node.t;
   graph: A.t;
 }
-
 
 let json_to_edge (json: J.json): Edge.t * Node.t =
   {
@@ -100,10 +105,14 @@ let from_json (json: J.json) : automaton =
     with | NodeFound v -> v
          | Not_found -> E.s (E.error "Initial node not found")
   in
+  let nb_sym = json |> member "nb_sym" |> to_int in
+  let symbols = H.create nb_sym in
+  let sym_list = List.map to_string (json |> member "symbols" |> to_list) in
+  List.iteri (fun i s -> H.add symbols s i) sym_list;
   {
     nb_states = json |> member "nb_state" |> to_int;
-    nb_sym = json |> member "nb_sym" |> to_int;
-    symbols = List.map to_string (json |> member "symbols" |> to_list);
+    nb_sym = nb_sym;
+    symbols = symbols;
     init_state = init_state;
     graph = graph;
   }

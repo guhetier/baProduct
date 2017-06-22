@@ -31,6 +31,10 @@ let get_label_name (l: label) =
 let mkBool (b: bool) =
   kinteger IBool (if b then 1 else 0)
 
+(* Construct an integer init *)
+let mkIntInit (i: int) =
+  {init=Some(SingleInit(integer i))}
+
 (* Filter global to apply `o` on functions only *)
 let only_functions (o: fundec -> location -> unit) (g: global) =
   match g with

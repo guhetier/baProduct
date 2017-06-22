@@ -28,11 +28,17 @@ let main () =
   let spec = Specification.from_file !O.specFile in
   let cilFile = parseFile !O.srcFile in
   R.removeUnusedTemps cilFile;
-  Mergeautomaton.initTruthVar cilFile spec;
+
   Mergeautomaton.add_result cilFile;
   let cil_props = Cilspecification.from_spec cilFile spec in
   Instrumentation.add_instrumentation cilFile cil_props;
-  outputFile !O.dstFile cilFile
+  outputFile !O.dstFile cilFile;
+
+  let a = Automaton.from_file "test.auto" in
+  let r = Mergeautomaton.print_c_automaton a in
+  print_string r;
+  let dotfile = open_out_bin "mygraph.dot" in
+  Automaton.Dot.output_graph dotfile a.graph
 ;;
 
 begin
