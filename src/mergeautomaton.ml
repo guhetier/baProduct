@@ -112,7 +112,6 @@ let surely_accepting_states (a: automaton) (v_sorted: A.vertex list) =
     | _ -> pessimistic_reach (depth-1) pessimistic_transitions.(vertex.id)
   in
 
-
   (* For every state, compute the set of state it can always reach *)
   let pess_reach = Array.make a.nb_states VSet.empty in
   for id_state = 0 to (a.nb_states-1) do
@@ -138,7 +137,9 @@ let print_c_transition_edge (a: automaton) (num_edge: int) (edge: A.edge) =
     | {pos = []; neg=[]} -> "1"
     | _ -> set_to_c_string (add_prefix e.pos) (add_prefix e.neg)
   in
-  printb b "@[<v 2>if (choice == %d) {@ " num_edge;
+  printb b "@[<v 2>";
+  if num_edge != 0 then printb b "\ else\ ";
+  printb b "if (choice == %d) {@ " num_edge;
   printb b "%s(%s);@ " !O.checker_assume guard;
   printb b "_ltl2ba_state_var = %d;@]@ " d.id;
   printb b "}"
@@ -148,11 +149,9 @@ let print_c_transition_edge (a: automaton) (num_edge: int) (edge: A.edge) =
 let print_c_transition_vertex (a: automaton) (v: A.vertex) =
   printb b "@[<v 2>case %d:@ " v.id;
   let out_e = A.succ_e a.graph v in
-  List.iteri (fun i e -> print_c_transition_edge a i e;
-               printb b " else ")
-    out_e;
+  List.iteri (fun i e -> print_c_transition_edge a i e) out_e;
 
-  printb b "@[<v 2>@ %s(0);@]@ " !O.checker_assume;
+  printb b "@[<v 2>\ else {@ %s(0);@]@ }@ " !O.checker_assume;
   printb b "break;@]@ "
 
 
@@ -167,10 +166,11 @@ let print_c_transition_function (a: automaton) =
 
      A.iter_vertex (print_c_transition_vertex a) a.graph;
 
-     printb b "@ }"
+     printb b "}"
   );
   printb b "@]";
   printb b "@ }@.\n"
+
 
 (* Print the result function of the automaton *)
 let print_c_conclusion_function (a: automaton) =
@@ -180,7 +180,7 @@ let print_c_conclusion_function (a: automaton) =
 
   printb b "int id = _ltl2ba_sym_to_id();@ ";
   printb b "int accept_stutter =\
-            _ltl_stutter_accept[id * %d + ltl2ba_state_var];@ " a.nb_states;
+            _ltl2ba_stutter_accept[id * %d + ltl2ba_state_var];@ " a.nb_states;
   printb b "%s(!accept_stutter, \"ERROR MAYBE\");@ " !O.checker_assert;
   printb b "%s(accept_stutter, \"VALID MAYBE\");@]@ " !O.checker_assert;
   printb b "}@.\n"
@@ -190,7 +190,7 @@ let print_c_conclusion_function (a: automaton) =
    atomic propositions
 *)
 let print_c_sym_to_id_function (a: automaton) =
-  printb b "@[<v 2>void _ltl2ba_sym_to_id() {@ ";
+  printb b "@[<v 2>int _ltl2ba_sym_to_id() {@ ";
   printb b "int id = 0;@ ";
   H.iter (fun s i -> printb b "id |= (_ltl2ba_atomic_%s << %i);@ " s i)
     a.symbols;
@@ -280,14 +280,10 @@ let insert_automaton_prototype (cil: file) =
   ()
 
 
-let call_dot (forumla: string) =
-  Automaton.from_file "automaton.tmp"
-
 (* Create the automaton corresponding to the specification.
-   Return the list of variables that are used for the instrumentation
-   and the code of the automaton in a string*)
-let create_automaton (cil: file) (spec: S.spec) =
-  let a = call_dot ("!( " ^ spec.S.ltl ^ ")") in
+   Returns the code of the automaton in a string.
+*)
+let create_automaton (a: automaton) (cil: file) (spec: S.spec) =
   let c_automaton = print_c_automaton a in
   insert_automaton_prototype cil;
   c_automaton
@@ -295,12 +291,11 @@ let create_automaton (cil: file) (spec: S.spec) =
 
 (********* Insert a call to the result function at the end of the main *********)
 
-class insert_result_visitor (fresult) = object(self)
+class insert_result_visitor (sresult) = object(self)
   inherit nopCilVisitor
   method vstmt s =
     match s.skind with
-    | Return _ -> let rc = mkFunctionCall fresult None [] (get_stmtLoc s.skind) in
-      let ns = Block (mkBlock [mkStmtOneInstr rc; s]) |> mkStmt in
+    | Return _ -> let ns = Block (mkBlock [sresult; s]) |> mkStmt in
       ChangeTo ns
     | _ -> DoChildren
 end
@@ -315,6 +310,11 @@ let insert_end_main rcal g =
 
 
 let add_result f =
-  let frtype = Baproductutils.mkFunctionType voidType [] in
-  let fr = findOrCreateFunc f "_ltl2ba_result" frtype in
-  iterGlobals f (insert_end_main fr)
+  let f_void_type = Baproductutils.mkFunctionType voidType [] in
+  let fr = findOrCreateFunc f "_ltl2ba_result" f_void_type in
+  let ab = findOrCreateFunc f !O.checker_atomic_begin f_void_type in
+  let ae = findOrCreateFunc f !O.checker_atomic_end f_void_type in
+  let fCalls = List.map (fun f -> mkFunctionCall f None [] (locUnknown))
+      [ab; fr; ae]
+  in
+  iterGlobals f (insert_end_main (mkStmt (Instr fCalls)))

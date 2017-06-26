@@ -27,19 +27,6 @@ module VSetSet = Set.Make(VSet)
 
 (* module A = Graph.Persistent.Digraph.ConcreteBidirectionalLabeled(Node)(Edge) *)
 
-module Dot = Graph.Graphviz.Dot(struct
-   include A
-   let edge_attributes (a, e, b) =
-     let l = Baproductutils.set_to_c_string e.pos e.neg in
-     [`Label l; `Color 4711]
-   let default_edge_attributes _ = []
-   let get_subgraph _ = None
-   let vertex_attributes _ = [`Shape `Circle]
-   let vertex_name v = string_of_int v.id
-   let default_vertex_attributes _ = []
-  let graph_attributes _ = []
-end)
-
 module OperAuto = Graph.Oper.P(A)
 
 type automaton = {
@@ -124,66 +111,21 @@ let from_file (filename: string) : automaton =
   in from_json json
 
 
-(*
-type label = int
+(* The Dot module define a printer to output an automaton in dot *)
+module Dot = Graph.Graphviz.Dot(struct
+   include A
+   let edge_attributes (a, e, b) =
+     let l = Baproductutils.set_to_c_string e.pos e.neg in
+     [`Label l; `Color 4711]
+   let default_edge_attributes _ = []
+   let get_subgraph _ = None
+   let vertex_attributes _ = [`Shape `Circle]
+   let vertex_name v = string_of_int v.id
+   let default_vertex_attributes _ = []
+  let graph_attributes _ = []
+end)
 
-type transition = {
-  dest: label;
-  pos: string list;
-  neg: string list
-}
 
-and state = {
-  label: label;
-  final: bool;
-  trans: transition list;
-}
-
-type automaton = {
-  nb_states: int;
-  nb_sym: int;
-  symbols: string list;
-  init_state: state;
-  states: (label, state) H.t;
-}
-
-let get_sate (a: automaton) (l: label) =
-  H.find a.states l
-
-let get_dest (a: automaton) (t: transition) =
-  H.find a.states t.dest
-
-let json_to_trans (json: J.json): transition =
-  {
-    dest = json |> member "dest" |> to_int;
-    pos = List.map to_string (json |> member "pos" |> to_list);
-    neg = List.map to_string (json |> member "neg" |> to_list);
-  }
-
-let json_to_state (json: J.json): state =
-  {
-    label = json |> member "label" |> to_int;
-    final = json |> member "final" |> to_bool;
-    trans = List.map json_to_trans (json |> member "trans" |> to_list);
-  }
-
-let from_json (json: J.json) : automaton =
-  let nb_states = json |> member "nb_state" |> to_int in
-  let state_list = List.map json_to_state (json |> member "states" |> to_list)
-  in
-  let states = H.create nb_states in
-  List.iter (fun s -> H.add states s.label s) state_list;
-
-  let init_label = json |> member "init_sate" |> to_int in
-  let init = try H.find states init_label with Not_found ->
-      E.s (E.error "Invalid label for initial state : %d" init_label)
-  in
-  {
-    nb_states = nb_states;
-    nb_sym = json |> member "nb_sym" |> to_int;
-    symbols = List.map to_string (json |> member "symbols" |> to_list);
-    init_state = init;
-    states = states
-  }
-*)
-
+(* Output an automaton in dot *)
+let output_dot_automaton (out_c: out_channel) (a: automaton) =
+  Dot.output_graph out_c a.graph

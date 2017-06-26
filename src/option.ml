@@ -4,6 +4,7 @@ module A = Arg
 let srcFile = ref ""
 let specFile = ref ""
 let dstFile = ref None
+let output_dot = ref false
 let verbose = ref false
 let debug = ref false
 
@@ -20,6 +21,7 @@ let argSpec = [
    "The output file (default : the standard output)");
   ("-v", A.Set verbose, "More detailed log messages");
   ("-d", A.Set debug, "Display debug messages");
+  ("--dot", A.Set output_dot, "Output the Büchi automaton in dot format");
 ]
 
 let annon s = ()
