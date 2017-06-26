@@ -224,10 +224,6 @@ let print_c_stutter_accept_table (a: automaton) (v_sorted: A.vertex list) =
                        A.add_edge_e sg (s, e, d) else sg)
         a.graph A.empty
     in
-  let dotfile = open_out_bin (Printf.sprintf "mygraph_%i.dot" sym_state) in
-  let closure = OperAuto.transitive_closure ~reflexive:false subgraph in
-  Automaton.Dot.output_graph dotfile closure;
-
     reach_final_cyle subgraph v_sorted
   in
   printb b "@[<v 2>int _ltl2ba_stutter_accept[%i] = {"

@@ -116,10 +116,14 @@ module Dot = Graph.Graphviz.Dot(struct
    include A
    let edge_attributes (a, e, b) =
      let l = Baproductutils.set_to_c_string e.pos e.neg in
-     [`Label l; `Color 4711]
+     [`Label l]
    let default_edge_attributes _ = []
    let get_subgraph _ = None
-   let vertex_attributes _ = [`Shape `Circle]
+   let vertex_attributes v =
+     if v.final then
+       [`Shape `Doublecircle]
+     else
+     [`Shape `Circle]
    let vertex_name v = string_of_int v.id
    let default_vertex_attributes _ = []
   let graph_attributes _ = []
