@@ -35,9 +35,13 @@ let main () =
   O.arg_parse ();
 
   (* Parse the specification *)
+  if !O.verbose then
+    E.log "Parsing the specification file %s...\n" !O.specFile;
   let spec = Specification.from_file !O.specFile in
 
   (* Parse the code and remove unused entities (keeps labels) *)
+  if !O.verbose then
+    E.log "Parsing the file %s" spec.Specification.ltl;
   let cilFile = parseFile !O.srcFile in
   R.removeUnusedTemps cilFile;
 
@@ -45,29 +49,44 @@ let main () =
      the ltl formula from the specification.
   *)
   let cmd = Printf.sprintf
-      "../ltl2ba/ltl2ba -f \"!( %s )\" -t json > auto.tmp"
+      "../../ltl2ba/ltl2ba -f \"!( %s )\" -t json > auto.tmp"
       spec.Specification.ltl
   in
+  if !O.verbose then
+    E.log "Calling ltl2ba on the formula %s\n" spec.Specification.ltl;
+
   (match Sys.command cmd with
   | 0 -> ()
-  | r -> E.s (E.error "ltl2ba failed (return value: %d)" r)
+  | r -> E.s (E.error "ltl2ba failed (return value: %d)\n" r)
   );
 
   (* Parse the automaton, translate it to C code *)
+  if !O.verbose then
+    E.log "Parsing the automaton...\n";
+
   let a = Automaton.from_file "auto.tmp" in
 
   (* If asked, output the automaton in dot *)
-  if !O.output_dot then
+  if !O.output_dot then begin
+    if !O.verbose then
+      E.log "Printing the automaton in dot...\n";
     let dotfile = open_out_bin "auto.dot" in
-    Automaton.output_dot_automaton dotfile a;
+    Automaton.output_dot_automaton dotfile a
+  end;
 
+  if !O.verbose then
+    E.log "Creating the automaton in C...\n";
   let c_automaton = Mergeautomaton.create_automaton a cilFile spec in
   Mergeautomaton.add_result cilFile;
 
   (* Convert the specification, collecting CIL entities that are used *)
+  if !O.verbose then
+    E.log "Collect CIL definitions...\n";
   let cil_props = Cilspecification.from_spec cilFile spec in
 
   (* Instrument the CIL file to synchronize the code with the automaton *)
+  if !O.verbose then
+    E.log "Instrument the file...\n";
   Instrumentation.add_instrumentation cilFile cil_props;
 
   (* Output the resulting code file *)

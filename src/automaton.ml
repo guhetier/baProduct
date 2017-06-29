@@ -8,8 +8,8 @@ open J.Util
 type node_t = {id: int; final: bool}
 module Node = struct
   type t = node_t
-  let compare v1 v2 = Pervasives.compare v1.id v2.id
-  let equal v1 v2 = v1.id = v2.id
+  let compare = Pervasives.compare
+  let equal v1 v2 = v1 = v2
   let hash v = Hashtbl.hash v.id
 end
 
@@ -37,17 +37,12 @@ type automaton = {
   graph: A.t;
 }
 
-let json_to_edge (json: J.json): Edge.t * Node.t =
+let json_to_edge (nodes: (int, Node.t) H.t) (json: J.json): Edge.t * Node.t =
   {
     pos = List.map to_string (json |> member "pos" |> to_list);
     neg = List.map to_string (json |> member "neg" |> to_list);
   },
-  {
-    id = json |> member "dest" |> to_int;
-    final = false; (* Node are identified by their id only, so final
-                      if not important here : all nodes have already been
-                      inserted with correct values when adding the edges *)
-  }
+  H.find nodes (json |> member "dest" |> to_int)
 
 
 let json_to_state (json: J.json): Node.t =
@@ -57,9 +52,9 @@ let json_to_state (json: J.json): Node.t =
   }
 
 
-let json_to_state_trans (json: J.json): A.edge list =
+let json_to_state_trans nodes (json: J.json): A.edge list =
   let vid = json |> member "label" |> to_int in
-  let edges = List.map json_to_edge (json |> member "trans" |> to_list) in
+  let edges = List.map (json_to_edge nodes) (json |> member "trans" |> to_list) in
   let v = {
     id = vid;
     final = json |> member "final" |> to_bool;
@@ -77,8 +72,15 @@ let from_json (json: J.json) : automaton =
   let states = List.map json_to_state (json |> member "states" |> to_list) in
   let graph = List.fold_left A.add_vertex graph states in
 
+  (* This table is needed because to build the edges, we need the nodes. The id
+  should be enough to identify a node, BUT if we do not use final in the comparison
+  function of a node, later, ocamlgraph may copy the node without the good value of
+  the final field (which triggers errors in result analysis) *)
+  let state_table = H.create 10 in
+  List.iter (fun s -> H.add state_table s.id s) states;
+
   (* Add edges to the graph *)
-  let edges = List.map json_to_state_trans
+  let edges = List.map (json_to_state_trans state_table)
       (json |> member "states" |> to_list) in
   let edges = List.flatten edges in
   let graph = List.fold_left A.add_edge_e graph edges in

@@ -12,13 +12,6 @@ let buffer = B.create 1000
 let b = Format.formatter_of_buffer buffer
 let printb = Format.fprintf
 
-(* TODO :
-   - Créer les variables contenant les propositions atomiques.
-   Cela doit être fait à partir de la spécification et ajouté dans l'AST
-   cil.
-   - Créer des prototypes dans CIL pour toutes les fonctions écrites à la main
-*)
-
 (* Check if, given a proposition state, it is possible to use the edge e *)
 let is_edge_valid (a: automaton) (e: edge_t) (sym_state: int) =
   let set_bit = (fun id s -> id lor (1 lsl (H.find a.symbols s))) in
@@ -38,7 +31,7 @@ let reach_final_cyle (g: A.t) (v_sorted: A.vertex list) =
     if is_final v then
       true
     else
-      A.fold_succ (fun v r -> if is_final v then true else r) closure v false
+        List.exists is_final (A.succ closure v)
   in
   List.map vertex_reach_final_cycle v_sorted
 
@@ -119,13 +112,17 @@ let surely_accepting_states (a: automaton) (v_sorted: A.vertex list) =
       pessimistic_reach a.nb_states pessimistic_transitions.(id_state)
   done;
 
-  (* Compute the set of set that are in a final pessimistic cycle *)
+  (* Compute the set of sets that are in a final pessimistic cycle *)
   let  final_cycle = List.filter
-      (fun v -> VSet.mem v pess_reach.(v.id))
+      (fun v -> v.final && VSet.mem v pess_reach.(v.id))
       v_sorted in
+
+  E.log "final_cycle = [%s]\n" (final_cycle |> List.map (fun n -> string_of_int n.id)
+                      |> String.concat " ,");
+
   let final_cycle = VSet.of_list final_cycle in
   List.map
-    (fun v -> VSet.inter final_cycle pess_reach.(v.id) != VSet.empty)
+    (fun v -> (VSet.inter final_cycle pess_reach.(v.id)) != VSet.empty)
     v_sorted
 
 
@@ -148,10 +145,19 @@ let print_c_transition_edge (a: automaton) (num_edge: int) (edge: A.edge) =
 (* Print the treatment of one vertex in the transition function *)
 let print_c_transition_vertex (a: automaton) (v: A.vertex) =
   printb b "@[<v 2>case %d:@ " v.id;
-  let out_e = A.succ_e a.graph v in
-  List.iteri (fun i e -> print_c_transition_edge a i e) out_e;
 
-  printb b "@[<v 2>\ else {@ %s(0);@]@ }@ " !O.checker_assume;
+  (* If the vertex is an accepting well, we can stop the exploration *)
+  if v.final && A.mem_edge_e a.graph (v, {pos=[]; neg=[]}, v) then begin
+    printb b "%s(0, \"ERROR_SURE\");@ " !O.checker_assert
+  end
+  else begin
+    match A.succ_e a.graph v with
+    (* No edges from the vertex *)
+    | [] -> printb b "%s(0);@ " !O.checker_assume
+    (* Edges *)
+    | out_e -> (List.iteri (fun i e -> print_c_transition_edge a i e) out_e;
+                printb b "@[<v 2>\ else {@ %s(0);@]@ }@ " !O.checker_assume;)
+  end;
   printb b "break;@]@ "
 
 
@@ -162,7 +168,7 @@ let print_c_transition_function (a: automaton) =
    | 0 -> printb b "%s(0);@ " !O.checker_assume
    | _ ->
      printb b "int choice = %s(); @ " !O.checker_non_det;
-     printb b "switch (_ltlba_state_var) {@ ";
+     printb b "switch (_ltl2ba_state_var) {@ ";
 
      A.iter_vertex (print_c_transition_vertex a) a.graph;
 
@@ -175,14 +181,21 @@ let print_c_transition_function (a: automaton) =
 (* Print the result function of the automaton *)
 let print_c_conclusion_function (a: automaton) =
   printb b "@[<v 2>void _ltl2ba_result() {@ ";
-  printb b "int reject_sure = _ltl2ba_surely_reject[_ltl2ba_state_var];@ ";
+
+  (* All continuation of the execution are accepted by the automaton *)
+  printb b "int reject_sure = _ltl2ba_surely_accept[_ltl2ba_state_var];@ ";
   printb b "%s(!reject_sure, \"ERROR SURE\");@ @ " !O.checker_assert;
 
   printb b "int id = _ltl2ba_sym_to_id();@ ";
+  (* The stuttering extension of the execution is accepted by the automaton *)
   printb b "int accept_stutter =\
-            _ltl2ba_stutter_accept[id * %d + ltl2ba_state_var];@ " a.nb_states;
+            _ltl2ba_stutter_accept[id * %d + _ltl2ba_state_var];@ " a.nb_states;
   printb b "%s(!accept_stutter, \"ERROR MAYBE\");@ " !O.checker_assert;
-  printb b "%s(accept_stutter, \"VALID MAYBE\");@]@ " !O.checker_assert;
+
+  (* All continuation of the execution are rejected by the automaton *)
+  printb b "int valid_sure = _ltl2ba_surely_reject[_ltl2ba_state_var];@ ";
+  printb b "%s(valid_sure, \"VALID MAYBE\");@ @ " !O.checker_assert;
+
   printb b "}@.\n"
 
 
@@ -221,7 +234,7 @@ let print_c_stutter_accept_table (a: automaton) (v_sorted: A.vertex list) =
   let stutter_accept_sym (sym_state: int) =
     let subgraph = A.fold_edges_e
         (fun (s, e, d) sg -> if is_edge_valid a e sym_state then
-                       A.add_edge_e sg (s, e, d) else sg)
+                       A.add_edge sg s d else sg)
         a.graph A.empty
     in
     reach_final_cyle subgraph v_sorted
@@ -229,7 +242,7 @@ let print_c_stutter_accept_table (a: automaton) (v_sorted: A.vertex list) =
   printb b "@[<v 2>int _ltl2ba_stutter_accept[%i] = {"
     (a.nb_states * (1 lsl a.nb_sym));
 
-  for sym_state = 0 to (1 lsl a.nb_sym) do
+  for sym_state = 0 to (1 lsl a.nb_sym - 1) do
     let state_accept = List.map (function | true -> "1" | false -> "0")
       (stutter_accept_sym sym_state)
     in
@@ -244,7 +257,7 @@ let print_c_stutter_accept_table (a: automaton) (v_sorted: A.vertex list) =
 let print_c_surely_accept_table (a: automaton) (v_sorted: A.vertex list) =
   printb b "@[int _ltl2ba_surely_accept[%i] = {@," a.nb_states;
   let state_accept = List.map
-      (function | true -> "0" | false -> "1")
+      (function | true -> "1" | false -> "0")
       (surely_accepting_states a v_sorted)
   in
   printb b "%s" (String.concat ", " state_accept);
@@ -275,6 +288,14 @@ let insert_automaton_prototype (cil: file) =
   let _ = findOrCreateFunc cil "_ltl2ba_sym_to_id" int_void_type in
   ()
 
+let insert_automaton_variable (cil: file) (a: automaton) =
+  let state_var_id = a.init_state.id in
+  let state_var = makeGlobalVar "_ltl2ba_state_var" intType  in
+  let state_var_def = GVar(state_var, (Baproductutils.mkIntInit state_var_id),
+                           locUnknown)
+  in
+  cil.globals <- state_var_def :: cil.globals
+
 
 (* Create the automaton corresponding to the specification.
    Returns the code of the automaton in a string.
@@ -282,6 +303,7 @@ let insert_automaton_prototype (cil: file) =
 let create_automaton (a: automaton) (cil: file) (spec: S.spec) =
   let c_automaton = print_c_automaton a in
   insert_automaton_prototype cil;
+  insert_automaton_variable cil a;
   c_automaton
 
 
