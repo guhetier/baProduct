@@ -68,7 +68,24 @@ let collectFromSpecification (f: file) (s: S.spec) =
   let prop_fun_cil = H.create 10 in
   let param_prop_cil = H.create 10 in
 
-  let collectParam (var: S.param) =
+  let create_prop_var_def (prop: atomic_prop) =
+    (* Create the global variables marking the state of a proposition *)
+    let tvar_inf = makeGlobalVar ("_ltl2ba_atomic_" ^ prop.S.name) intType  in
+    let tvar_def = GVar(tvar_inf,
+                        (Baproductutils.mkIntInit
+                           (if prop.S.default_val then 1 else 0)),
+                        locUnknown)
+    in
+    let svar_inf = makeGlobalVar ("_ltl2ba_active_" ^ prop.S.name) intType in
+    let svar_def = GVar(svar_inf, (Baproductutils.mkIntInit 0), locUnknown)
+    in
+    f.globals <- svar_def :: tvar_def :: f.globals;
+    H.add truth_var_cil prop.name tvar_inf;
+    H.add state_var_cil prop.name svar_inf
+
+  in List.iter create_prop_var_def s.props;
+
+  let collectParam (var: param) =
     if not (H.mem param_prop_cil var) then
       let vopt, pname = match var with
       | Global(vname) -> searchGlobVar f vname, "_ltl2ba_pointer_" ^ vname
@@ -83,14 +100,7 @@ let collectFromSpecification (f: file) (s: S.spec) =
         f.globals <- GVar(vpointer, initvp, locUnknown)::f.globals;
         H.add param_prop_cil var (vcil, vpointer)
   in
-  let collectFromProp (p: S.atomic_prop) =
-    (* Collect the truth variable for the proposition *)
-    let truth_var_name = "_ltl2ba_atomic_" ^ p.name in
-    (match searchGlobVar f truth_var_name with
-    | None -> E.s (E.error "Missing proposition truth variable %s"
-      truth_var_name)
-    | Some v -> H.add truth_var_cil p.name v
-    );
+  let collect_prop_fun (p: atomic_prop) =
     (* Collect the function defining the proposition value *)
     if not (H.mem prop_fun_cil p.expr) then begin
       match searchFunction f p.expr with
@@ -98,12 +108,7 @@ let collectFromSpecification (f: file) (s: S.spec) =
       | Some v -> H.add prop_fun_cil p.expr v
     end;
     (* Collect the proposition parameters *)
-    List.iter collectParam p.params;
-    (* Create a state variable for the proposition *)
-    let sv = makeGlobalVar ("_ltl2ba_active_" ^ p.name) (TInt(IBool, [])) in
-    let initsv = {init = Some (makeZeroInit (TInt(IBool, [])))} in
-    f.globals <- GVar(sv, initsv, locUnknown)::f.globals;
-    H.add state_var_cil p.name sv
+    List.iter collectParam p.params
   in
-  List.iter collectFromProp s.props;
+  List.iter collect_prop_fun s.props;
   (truth_var_cil, state_var_cil, prop_fun_cil, param_prop_cil)

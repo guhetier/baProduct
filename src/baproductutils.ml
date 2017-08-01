@@ -31,8 +31,18 @@ let get_label_name (l: label) =
 let mkBool (b: bool) =
   kinteger IBool (if b then 1 else 0)
 
+(* Construct an integer init *)
+let mkIntInit (i: int) =
+  {init=Some(SingleInit(integer i))}
+
 (* Filter global to apply `o` on functions only *)
 let only_functions (o: fundec -> location -> unit) (g: global) =
   match g with
   | GFun (fd, l) -> o fd l
   | _ -> ()
+
+(* Construct a string representing the condition of a transition of the
+   automaton *)
+let set_to_c_string (pos: string list) (neg: string list) =
+  let neg = List.map (fun s -> "!"^s) neg in
+  String.concat " && " (pos @ neg)

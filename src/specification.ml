@@ -26,15 +26,25 @@ let emptySpec : spec = {
   props = []
 }
 
+
+(* Convert the LTL operators of a formula to be compatible with ltl2ba *)
+let convert_ltl_operators (f: string) : string =
+  f |> (Str.global_replace (Str.regexp_string "G") "[]")
+  |> (Str.global_replace (Str.regexp_string "F") "<>")
+
+
 let get_prop_start (p: atomic_prop) : string =
   fst p.valid_span
+
 
 let get_prop_end (p: atomic_prop) : string =
   snd p.valid_span
 
+
 let atomic_prop_to_string (p: atomic_prop) : string =
   Printf.sprintf "Prop %s [%B, %s, %s -> %s]" p.name p.default_val
     p.expr (fst p.valid_span) (snd p.valid_span)
+
 
 let json_to_param (json: J.json) : param =
   let fullname = to_string json in
@@ -59,7 +69,7 @@ let json_to_pa (json: J.json) : atomic_prop =
 
 let from_json (json: J.json) : spec =
   {
-    ltl = json |> member "ltl" |> to_string;
+    ltl = json |> member "ltl" |> to_string |> convert_ltl_operators;
     props = List.map json_to_pa (json |> member "pa" |> to_list)
   }
 
