@@ -31,7 +31,10 @@ let reach_final_cyle (g: A.t) (v_sorted: A.vertex list) =
     if is_final v then
       true
     else
+      (* If there is no successor, the function A.succ may rise an exception *)
+      try
         List.exists is_final (A.succ closure v)
+      with Invalid_argument _ -> false
   in
   List.map vertex_reach_final_cycle v_sorted
 
