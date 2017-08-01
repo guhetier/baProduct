@@ -4,6 +4,8 @@ module A = Arg
 let srcFile = ref ""
 let specFile = ref ""
 let dstFile = ref None
+let ltl2ba_path = ref "ltl2ba"
+let tmp_path = ref "."
 let output_dot = ref false
 let verbose = ref false
 let debug = ref false
@@ -19,6 +21,10 @@ let argSpec = [
   ("-s", A.Set_string specFile, "The specification used for instrumentation");
   ("-o", A.String (fun s -> dstFile := Some s),
    "The output file (default : the standard output)");
+  ("--ltl2ba", A.Set_string ltl2ba_path,
+   "The path to ltl2ba (with json output) (in the PATH by default)");
+  ("--tmp", A.Set_string tmp_path,
+   "The folder where temporary files are created (current folder by default)");
   ("-v", A.Set verbose, "More detailed log messages");
   ("-d", A.Set debug, "Display debug messages");
   ("--dot", A.Set output_dot, "Output the Büchi automaton in dot format");

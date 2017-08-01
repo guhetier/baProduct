@@ -117,9 +117,6 @@ let surely_accepting_states (a: automaton) (v_sorted: A.vertex list) =
       (fun v -> v.final && VSet.mem v pess_reach.(v.id))
       v_sorted in
 
-  E.log "final_cycle = [%s]\n" (final_cycle |> List.map (fun n -> string_of_int n.id)
-                      |> String.concat " ,");
-
   let final_cycle = VSet.of_list final_cycle in
   List.map
     (fun v -> (VSet.inter final_cycle pess_reach.(v.id)) != VSet.empty)

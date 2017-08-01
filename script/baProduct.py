@@ -32,28 +32,21 @@ def main():
     if not os.path.exists(TMP_FILE_FOLDER):
         os.makedirs(TMP_FILE_FOLDER)
 
-    with open(MERGE_FILE, 'w+') as fmerge:
-        ltl2ba_process = subprocess.Popen([LTL2BA_PATH, '-f', ltl_formula, '-t', 'c', ],
-                                          stdout=fmerge)
-
-        print("Generating the automaton for the formula : {} ...".format(ltl_formula))
-        ltl2ba_process.wait()
-
-        print("Merging the files...", ltl_formula)
-
-        fmerge.write("/**************************************************/")
-        with open(args.input) as finput:
-            fmerge.write(finput.read())
-
-    print("Preprocessing...")
-    preproc_process = subprocess.Popen([PROCESSOR, '-E', MERGE_FILE, '-o', PREPROC_FILE])
+    print("Preprocessing the file...")
+    preproc_process = subprocess.Popen([PROCESSOR, '-E', args.input, '-o', PREPROC_FILE])
     preproc_process.wait()
 
-    print("Instrumenting the sources...")
+    print("Calling baProduct...")
     output = os.path.splitext(args.input)[0] + "_instr.c"
-    baprod_process = subprocess.Popen([BA_PRODUCT_PATH, '-i', PREPROC_FILE, '-s',
-                                       args.spec, '-o', output],
-                                      stdout=sys.stdout)
+    baprod_process = subprocess.Popen(
+        [BA_PRODUCT_PATH,
+         '-i', PREPROC_FILE,
+         '-s', args.spec,
+         '-o', output,
+         '--dot',
+         '--tmp', TMP_FILE_FOLDER,
+         '--ltl2ba', LTL2BA_PATH,
+         ], stdout=sys.stdout)
     baprod_process.wait()
     print("Result printed to file {}".format(output))
 

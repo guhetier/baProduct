@@ -49,8 +49,8 @@ let main () =
      the ltl formula from the specification.
   *)
   let cmd = Printf.sprintf
-      "../../ltl2ba/ltl2ba -f \"!( %s )\" -t json > auto.tmp"
-      spec.Specification.ltl
+      "%s -f \"!( %s )\" -t json > %s/auto.tmp"
+      !O.ltl2ba_path spec.Specification.ltl !O.tmp_path
   in
   if !O.verbose then
     E.log "Calling ltl2ba on the formula %s\n" spec.Specification.ltl;
@@ -64,13 +64,13 @@ let main () =
   if !O.verbose then
     E.log "Parsing the automaton...\n";
 
-  let a = Automaton.from_file "auto.tmp" in
+  let a = Automaton.from_file (!O.tmp_path ^ "/auto.tmp") in
 
   (* If asked, output the automaton in dot *)
   if !O.output_dot then begin
     if !O.verbose then
       E.log "Printing the automaton in dot...\n";
-    let dotfile = open_out_bin "auto.dot" in
+    let dotfile = open_out_bin (!O.tmp_path ^ "/auto.dot") in
     Automaton.output_dot_automaton dotfile a
   end;
 
