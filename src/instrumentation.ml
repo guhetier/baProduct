@@ -10,8 +10,8 @@ module O = Option
 let cilSpec : CS.cil_prop_state = CS.empty
 
 let transition_fun_str = "_ltl2ba_transition"
-let atomic_begin_fun_str = "__ESBMC_atomic_begin"
-let atomic_end_fun_str = "__ESBMC_atomic_end"
+let atomic_begin_fun_str = !O.checker_atomic_begin
+let atomic_end_fun_str = !O.checker_atomic_end
 
 let dummy_fun = makeVarinfo false "_dummy" voidType
 
@@ -205,9 +205,9 @@ class instrumentVarChangeVisitor = object(self)
 
   (* The instrumentation may requires to insert a statement before an
      instruction. CIL does not handle this case. We rebuilt every statement by
-     hand during the instruction visit and insert the newly created statements
-     once all the instructions of the statement have been  explored.
-     `nstmts` contains the list of statements that will replaced the current
+     hand when visiting the instructions and insert the newly created statements
+     once all the instructions of the statement have been explored.
+     `nstmts` contains the list of statements that will replace the current
      statement, in reverse order. *)
   val mutable nstmts: stmt list = []
 
@@ -226,7 +226,7 @@ class instrumentVarChangeVisitor = object(self)
     | _ -> nstmts <- (mkStmtOneInstr i)::nstmts
 
 
-  (* Update active proposition an replace statements be those constructed while
+  (* Update active propositions and replace statements by those constructed while
      exploring instructions *)
   method vstmt (s: stmt) =
     (* Update the active propositions *)
@@ -327,6 +327,9 @@ end
 let process_function (cs: CS.cil_prop list) (fd: fundec) (l: location) : unit =
   (* Initialize the proposition state *)
   cilSpec.CS.disabled_props <- cs;
+  let (global_prop, disabled_prop) = List.partition CS.is_prop_global cs in
+  cilSpec.CS.disabled_props <- disabled_prop;
+  cilSpec.CS.enabled_props <- global_prop;
 
   let visZone = new instrumentZoneChangeVisitor in
   ignore(visitCilFunction visZone fd);
@@ -335,7 +338,7 @@ let process_function (cs: CS.cil_prop list) (fd: fundec) (l: location) : unit =
      before its end. It is essential for the second visitor to compute active
      zone correctly.
   *)
-  if (CS.get_enabled_props cilSpec) <> [] then begin
+  if (CS.get_enabled_props cilSpec) <> global_prop then begin
     let pnames = List.fold_left (fun ss p -> (CS.get_name p) ^ " " ^ ss)
         "" (CS.get_enabled_props cilSpec)
     in E.s (E.error "Active zone for atomic propositions %s have been \
@@ -344,6 +347,28 @@ let process_function (cs: CS.cil_prop list) (fd: fundec) (l: location) : unit =
 
   let visVar = new instrumentVarChangeVisitor in
   ignore(visitCilFunction visVar fd)
+
+(* Initialize global proposition at the beginning of the main method *)
+let insert_global_prop_init (cs: CS.cil_prop list) (func: Cil.fundec) (loc: Cil.location) =
+
+  if func.svar.vname = "main" then
+    begin
+      let global_prop = List.filter CS.is_prop_global cs in
+      match global_prop with
+      | [] -> ()
+      | _ ->
+        (* Call the proposition initialization function *)
+        let init_glob_instr =
+          List.map (fun p -> mkUpdateFunctionCall p loc) global_prop in
+        (* The transition function call *)
+        let tr = mkTransitionFunctionCall loc in
+        (* atomic_begin call *)
+        let ab = mkFunctionCall instrFun.atomic_begin None [] loc in
+        (* atomic_end call *)
+        let ae = mkFunctionCall instrFun.atomic_end None [] loc in
+        let init_glob_stmt = mkStmt (Instr (ab::(init_glob_instr @ [tr; ae]))) in
+        func.sbody <- mkBlock (init_glob_stmt :: [mkStmt (Block func.sbody)])
+    end
 
 
 (* Instrument every function of the file to build the product with the Büchi
@@ -358,4 +383,7 @@ let add_instrumentation (f: file) (cs: CS.cil_prop list) =
     findOrCreateFunc f atomic_end_fun_str (mkFunctionType voidType []);
 
   (* Instrument every function of the file *)
-  iterGlobals f (only_functions (process_function cs))
+  iterGlobals f (only_functions (process_function cs));
+
+  (* Initialize global proposition at the beginning of the main method *)
+  iterGlobals f (only_functions (insert_global_prop_init cs))

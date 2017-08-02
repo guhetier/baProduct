@@ -77,6 +77,12 @@ let get_truth_var (p: cil_prop) =
 let get_state_var (p: cil_prop) =
   p.state_var
 
+(* Labels "_begin" and "_end" are reserved.
+   They mark a global property and must be used together.
+   A property using only one is invalid (for now) *)
+let is_prop_global (p: cil_prop) =
+  p.start_label = "_begin" && p.end_label = "_end"
+
 (* Builder *)
 let make_cil_prop name sl el pf pps def tv sv =
   {

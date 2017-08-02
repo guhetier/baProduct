@@ -9,12 +9,18 @@ let tmp_path = ref "."
 let output_dot = ref false
 let verbose = ref false
 let debug = ref false
+let model_checker = ref "esbmc"
 
 let checker_assert = ref "__ESBMC_assert"
 let checker_assume = ref "__ESBMC_assume"
 let checker_atomic_begin = ref "__ESBMC_atomic_begin"
 let checker_atomic_end = ref "__ESBMC_atomic_end"
 let checker_non_det = ref "nondet_uint"
+
+let init_model_checker_cmd mc =
+  match mc with
+  | "esbmc" -> ()
+  | _ -> E.s (E.error "The model checker %s is not supported." mc)
 
 let argSpec = [
   ("-i", A.Set_string srcFile, "The file to instrument");
@@ -23,6 +29,7 @@ let argSpec = [
    "The output file (default : the standard output)");
   ("--ltl2ba", A.Set_string ltl2ba_path,
    "The path to ltl2ba (with json output) (in the PATH by default)");
+  ("-m", A.Set_string model_checker, "The model checker the instrumentation is for");
   ("--tmp", A.Set_string tmp_path,
    "The folder where temporary files are created (current folder by default)");
   ("-v", A.Set verbose, "More detailed log messages");
@@ -40,4 +47,5 @@ let arg_parse () =
   A.parse argSpec annon usage_msg;
   if !srcFile = "" || !specFile = "" then
     E.s (E.error "The input file and the specification file must be \
-    provided.\n\n%s" (A.usage_string argSpec usage_msg))
+    provided.\n\n%s" (A.usage_string argSpec usage_msg));
+  init_model_checker_cmd !model_checker
