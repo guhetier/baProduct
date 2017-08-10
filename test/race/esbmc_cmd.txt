@@ -1,0 +1,5 @@
+/!\ Propriété globable sur score : il faut supprimer les entrées / sorties de zone pour cette
+variable.
+
+./esbmc --context-bound 4 race/race_instr.c
+./esbmc --context-bound 4 race/race_instr2.c

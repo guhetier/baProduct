@@ -1,0 +1,4 @@
+
+./esbmc --depth 500 --context-bound 3 battery_simple/battery_simple_instr.c
+
+./esbmc --unwind 150 --unwindset 2:2 --unwindset 4:2 --no-unwinding-assertions --context-bound 3 battery_simple/battery_simple.c.instr.c
