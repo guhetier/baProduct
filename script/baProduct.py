@@ -45,21 +45,29 @@ def main():
     preproc_file = os.path.join(args.tmp_folder, "preproc.c")
 
     print("Preprocessing the file...")
-    preproc_process = subprocess.Popen([PROCESSOR, '-E', args.input, '-o', preproc_file])
-    preproc_process.wait()
+    try:
+        subprocess.run([PROCESSOR, '-E', args.input, '-o', preproc_file]).check_returncode()
+    except subprocess.CalledProcessError:
+        print("Error while preprocessing the file.")
+        exit(1)
 
     print("Calling baProduct...")
     output = os.path.splitext(args.input)[0] + "_instr.c"
-    baprod_process = subprocess.Popen(
-        [BA_PRODUCT_PATH,
-         '-i', preproc_file,
-         '-s', args.spec,
-         '-o', output,
-         '--dot',
-         '--tmp', args.tmp_folder,
-         '--ltl2ba', LTL2BA_PATH,
-        ] + args.remainder, stdout=sys.stdout)
-    baprod_process.wait()
+    try:
+        subprocess.run(
+            [BA_PRODUCT_PATH,
+             '-i', preproc_file,
+             '-s', args.spec,
+             '-o', output,
+             '--dot',
+             '--tmp', args.tmp_folder,
+             '--ltl2ba', LTL2BA_PATH,
+            ] + args.remainder, stdout=sys.stdout
+        ).check_returncode()
+    except subprocess.CalledProcessError:
+        print("Error while instrumenting the file.")
+        exit(1)
+
     print("Result printed to file {}".format(output))
 
 if __name__ == "__main__":
