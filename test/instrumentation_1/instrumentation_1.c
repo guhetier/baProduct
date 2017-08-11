@@ -16,19 +16,20 @@ int fq(int a, int b, int c, int d) {
 int g1, g2;
 
 void *t1(void *d) {
-    int v1, v2, v3;
+    int v1, v3;
+    char v2;
 
-    v2 = 7;
+    v2 = 'c';
  l1:;
     v1 = g1;
     v3 = v1 + 1;
     g1 = 8;
  lg1:;
-    v2 = 5;
+    v2 = 'a';
     g2 = 3;
     v1 = g1;
  l2:;
-    v3 = v1 + v2;
+    v3 = v1 + v3;
     g2 = 5;
  lg2:;
     pthread_exit(NULL);

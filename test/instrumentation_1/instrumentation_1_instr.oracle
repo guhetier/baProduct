@@ -4,7 +4,7 @@
 int *_ltl2ba_pointer_t2_v4  =    (int *)0;
 int *_ltl2ba_pointer_g2  =    (int *)0;
 int *_ltl2ba_pointer_t1_v3  =    (int *)0;
-int *_ltl2ba_pointer_t1_v2  =    (int *)0;
+char *_ltl2ba_pointer_t1_v2  =    (char *)0;
 int *_ltl2ba_pointer_t1_v1  =    (int *)0;
 int *_ltl2ba_pointer_g1  =    (int *)0;
 int _ltl2ba_active_q  =    0;
@@ -75,169 +75,169 @@ int g2  ;
 void *t1(void *d ) 
 { 
   int v1 ;
-  int v2 ;
   int v3 ;
+  char v2 ;
 
   {
-#line 21
-  v2 = 7;
+#line 22
+  v2 = (char )'c';
   {
-#line 23
+#line 24
   __ESBMC_atomic_begin();
-#line 23
+#line 24
   _ltl2ba_pointer_t1_v1 = & v1;
-#line 23
+#line 24
   _ltl2ba_pointer_t1_v2 = & v2;
-#line 23
+#line 24
   _ltl2ba_pointer_t1_v3 = & v3;
-#line 23
+#line 24
   _ltl2ba_atomic_r = fr(*_ltl2ba_pointer_t1_v1, *_ltl2ba_pointer_t1_v2, *_ltl2ba_pointer_t1_v3);
-#line 23
+#line 24
   _ltl2ba_active_r = (_Bool)1;
-#line 23
+#line 24
   _ltl2ba_transition();
-#line 23
+#line 24
   __ESBMC_atomic_end();
   l1: 
   {
-#line 23
+#line 24
   __ESBMC_atomic_begin();
-#line 23
+#line 24
   v1 = g1;
-#line 23
+#line 24
   _ltl2ba_atomic_r = fr(*_ltl2ba_pointer_t1_v1, *_ltl2ba_pointer_t1_v2, *_ltl2ba_pointer_t1_v3);
-#line 23
+#line 24
   _ltl2ba_transition();
-#line 23
+#line 24
   __ESBMC_atomic_end();
-#line 24
+#line 25
   __ESBMC_atomic_begin();
-#line 24
+#line 25
   v3 = v1 + 1;
-#line 24
+#line 25
   _ltl2ba_atomic_r = fr(*_ltl2ba_pointer_t1_v1, *_ltl2ba_pointer_t1_v2, *_ltl2ba_pointer_t1_v3);
-#line 24
+#line 25
   _ltl2ba_transition();
-#line 24
+#line 25
   __ESBMC_atomic_end();
-#line 25
+#line 26
   __ESBMC_atomic_begin();
-#line 25
+#line 26
   g1 = 8;
-#line 25
+#line 26
   _ltl2ba_atomic_p = fp(*_ltl2ba_pointer_g1);
-#line 25
+#line 26
   if (_ltl2ba_active_q) {
-#line 25
+#line 26
     _ltl2ba_atomic_q = fq(*_ltl2ba_pointer_g1, *_ltl2ba_pointer_g2, *_ltl2ba_pointer_t1_v1,
                           *_ltl2ba_pointer_t2_v4);
   }
-#line 25
+#line 26
   _ltl2ba_transition();
-#line 25
+#line 26
   __ESBMC_atomic_end();
   }
   }
   {
-#line 27
+#line 28
   __ESBMC_atomic_begin();
-#line 27
+#line 28
   _ltl2ba_pointer_g1 = & g1;
-#line 27
+#line 28
   _ltl2ba_pointer_g2 = & g2;
-#line 27
+#line 28
   _ltl2ba_pointer_t1_v1 = & v1;
-#line 27
+#line 28
   _ltl2ba_pointer_t2_v4 = & v4;
-#line 27
+#line 28
   _ltl2ba_atomic_q = fq(*_ltl2ba_pointer_g1, *_ltl2ba_pointer_g2, *_ltl2ba_pointer_t1_v1,
                         *_ltl2ba_pointer_t2_v4);
-#line 27
+#line 28
   _ltl2ba_active_q = (_Bool)1;
-#line 27
+#line 28
   _ltl2ba_transition();
-#line 27
+#line 28
   __ESBMC_atomic_end();
   lg1: 
-#line 27
+#line 28
   __ESBMC_atomic_begin();
-#line 27
-  v2 = 5;
-#line 27
+#line 28
+  v2 = (char )'a';
+#line 28
   _ltl2ba_atomic_r = fr(*_ltl2ba_pointer_t1_v1, *_ltl2ba_pointer_t1_v2, *_ltl2ba_pointer_t1_v3);
-#line 27
+#line 28
   _ltl2ba_transition();
-#line 27
+#line 28
   __ESBMC_atomic_end();
-#line 28
+#line 29
   __ESBMC_atomic_begin();
-#line 28
+#line 29
   g2 = 3;
-#line 28
+#line 29
   _ltl2ba_atomic_q = fq(*_ltl2ba_pointer_g1, *_ltl2ba_pointer_g2, *_ltl2ba_pointer_t1_v1,
                         *_ltl2ba_pointer_t2_v4);
-#line 28
+#line 29
   _ltl2ba_transition();
-#line 28
+#line 29
   __ESBMC_atomic_end();
-#line 29
+#line 30
   __ESBMC_atomic_begin();
-#line 29
+#line 30
   v1 = g1;
-#line 29
+#line 30
   _ltl2ba_atomic_r = fr(*_ltl2ba_pointer_t1_v1, *_ltl2ba_pointer_t1_v2, *_ltl2ba_pointer_t1_v3);
-#line 29
+#line 30
   _ltl2ba_atomic_q = fq(*_ltl2ba_pointer_g1, *_ltl2ba_pointer_g2, *_ltl2ba_pointer_t1_v1,
                         *_ltl2ba_pointer_t2_v4);
-#line 29
+#line 30
   _ltl2ba_transition();
-#line 29
+#line 30
   __ESBMC_atomic_end();
   }
   {
-#line 31
+#line 32
   __ESBMC_atomic_begin();
-#line 31
+#line 32
   _ltl2ba_atomic_r = (_Bool)0;
-#line 31
+#line 32
   _ltl2ba_active_r = (_Bool)0;
-#line 31
+#line 32
   _ltl2ba_transition();
-#line 31
+#line 32
   __ESBMC_atomic_end();
   l2: 
-#line 31
-  v3 = v1 + v2;
 #line 32
+  v3 = v1 + v3;
+#line 33
   __ESBMC_atomic_begin();
-#line 32
+#line 33
   g2 = 5;
-#line 32
+#line 33
   _ltl2ba_atomic_q = fq(*_ltl2ba_pointer_g1, *_ltl2ba_pointer_g2, *_ltl2ba_pointer_t1_v1,
                         *_ltl2ba_pointer_t2_v4);
-#line 32
+#line 33
   _ltl2ba_transition();
-#line 32
+#line 33
   __ESBMC_atomic_end();
   }
   {
-#line 34
+#line 35
   __ESBMC_atomic_begin();
-#line 34
+#line 35
   _ltl2ba_atomic_q = (_Bool)0;
-#line 34
+#line 35
   _ltl2ba_active_q = (_Bool)0;
-#line 34
+#line 35
   _ltl2ba_transition();
-#line 34
+#line 35
   __ESBMC_atomic_end();
   lg2: 
-#line 34
+#line 35
   pthread_exit((void *)0);
   }
 }
 }
-#line 37 "/home/nephe/Documents/Research/dev/baProduct/test/instrumentation_1/instrumentation_1.c"
+#line 38 "/home/nephe/Documents/Research/dev/baProduct/test/instrumentation_1/instrumentation_1.c"
 void *t2(void *d ) 
 { 
   int v4 ;
@@ -245,90 +245,90 @@ void *t2(void *d )
 
   {
   {
-#line 39
-  __ESBMC_atomic_begin();
-#line 39
-  g1 = 4;
-#line 39
-  _ltl2ba_atomic_p = fp(*_ltl2ba_pointer_g1);
-#line 39
-  if (_ltl2ba_active_q) {
-#line 39
-    _ltl2ba_atomic_q = fq(*_ltl2ba_pointer_g1, *_ltl2ba_pointer_g2, *_ltl2ba_pointer_t1_v1,
-                          *_ltl2ba_pointer_t2_v4);
-  }
-#line 39
-  _ltl2ba_transition();
-#line 39
-  __ESBMC_atomic_end();
 #line 40
+  __ESBMC_atomic_begin();
+#line 40
+  g1 = 4;
+#line 40
+  _ltl2ba_atomic_p = fp(*_ltl2ba_pointer_g1);
+#line 40
+  if (_ltl2ba_active_q) {
+#line 40
+    _ltl2ba_atomic_q = fq(*_ltl2ba_pointer_g1, *_ltl2ba_pointer_g2, *_ltl2ba_pointer_t1_v1,
+                          *_ltl2ba_pointer_t2_v4);
+  }
+#line 40
+  _ltl2ba_transition();
+#line 40
+  __ESBMC_atomic_end();
+#line 41
   v4 = 8;
-#line 41
-  __ESBMC_atomic_begin();
-#line 41
-  g2 = 5;
-#line 41
-  if (_ltl2ba_active_q) {
-#line 41
-    _ltl2ba_atomic_q = fq(*_ltl2ba_pointer_g1, *_ltl2ba_pointer_g2, *_ltl2ba_pointer_t1_v1,
-                          *_ltl2ba_pointer_t2_v4);
-  }
-#line 41
-  _ltl2ba_transition();
-#line 41
-  __ESBMC_atomic_end();
 #line 42
-  k = 42;
-#line 43
   __ESBMC_atomic_begin();
-#line 43
-  g2 += k;
-#line 43
+#line 42
+  g2 = 5;
+#line 42
   if (_ltl2ba_active_q) {
-#line 43
+#line 42
     _ltl2ba_atomic_q = fq(*_ltl2ba_pointer_g1, *_ltl2ba_pointer_g2, *_ltl2ba_pointer_t1_v1,
                           *_ltl2ba_pointer_t2_v4);
   }
-#line 43
+#line 42
   _ltl2ba_transition();
-#line 43
+#line 42
   __ESBMC_atomic_end();
+#line 43
+  k = 42;
 #line 44
+  __ESBMC_atomic_begin();
+#line 44
+  g2 += k;
+#line 44
+  if (_ltl2ba_active_q) {
+#line 44
+    _ltl2ba_atomic_q = fq(*_ltl2ba_pointer_g1, *_ltl2ba_pointer_g2, *_ltl2ba_pointer_t1_v1,
+                          *_ltl2ba_pointer_t2_v4);
+  }
+#line 44
+  _ltl2ba_transition();
+#line 44
+  __ESBMC_atomic_end();
+#line 45
   pthread_exit((void *)0);
   }
 }
 }
-#line 47 "/home/nephe/Documents/Research/dev/baProduct/test/instrumentation_1/instrumentation_1.c"
+#line 48 "/home/nephe/Documents/Research/dev/baProduct/test/instrumentation_1/instrumentation_1.c"
 int main(void) 
 { 
   pthread_t th1 ;
   pthread_t th2 ;
 
   {
-#line 47
+#line 48
   __ESBMC_atomic_begin();
-#line 47
+#line 48
   _ltl2ba_atomic_p = fp(*_ltl2ba_pointer_g1);
-#line 47
+#line 48
   _ltl2ba_transition();
-#line 47
+#line 48
   __ESBMC_atomic_end();
   {
-#line 49
+#line 50
   pthread_create((pthread_t */* __restrict  */)(& th1), (pthread_attr_t const   */* __restrict  */)((void *)0),
                  & t1, (void */* __restrict  */)((void *)0));
-#line 50
+#line 51
   pthread_create((pthread_t */* __restrict  */)(& th2), (pthread_attr_t const   */* __restrict  */)((void *)0),
                  & t2, (void */* __restrict  */)((void *)0));
-#line 51
-  pthread_join(th1, (void **)((void *)0));
 #line 52
+  pthread_join(th1, (void **)((void *)0));
+#line 53
   pthread_join(th2, (void **)((void *)0));
   {
   __ESBMC_atomic_begin();
   _ltl2ba_result();
   __ESBMC_atomic_end();
-#line 53
+#line 54
   return (0);
   }
   }
