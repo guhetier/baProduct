@@ -30,13 +30,6 @@ def main():
     if not args.remainder:
         args.remainder = []
 
-    with open(args.spec) as spec_file:
-        spec = json.load(spec_file)
-
-    ltl_formula = spec["ltl"]
-    ltl_formula = ltl_formula.replace("G", "[]").replace("F", "<>")
-    ltl_formula = "! ( " + ltl_formula + " )"
-
     if not args.tmp_folder:
         args.tmp_folder = TMP_FILE_FOLDER_DEFAULT
     if not os.path.exists(args.tmp_folder):
