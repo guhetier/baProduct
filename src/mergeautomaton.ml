@@ -182,20 +182,21 @@ let print_c_transition_function (a: automaton) =
 let print_c_conclusion_function (a: automaton) =
   printb b "@[<v 2>void _ltl2ba_result() {@ ";
 
-  (* All continuation of the execution are accepted by the automaton *)
-  printb b "int reject_sure = _ltl2ba_surely_accept[_ltl2ba_state_var];@ ";
-  printb b "%s(!reject_sure, \"ERROR SURE\");@ @ " !O.checker_assert;
+  if a.nb_states <> 0 then begin
+    (* All continuation of the execution are accepted by the automaton *)
+    printb b "int reject_sure = _ltl2ba_surely_accept[_ltl2ba_state_var];@ ";
+    printb b "%s(!reject_sure, \"ERROR SURE\");@ @ " !O.checker_assert;
 
-  printb b "int id = _ltl2ba_sym_to_id();@ ";
-  (* The stuttering extension of the execution is accepted by the automaton *)
-  printb b "int accept_stutter =\
-            _ltl2ba_stutter_accept[id * %d + _ltl2ba_state_var];@ " a.nb_states;
-  printb b "%s(!accept_stutter, \"ERROR MAYBE\");@ " !O.checker_assert;
+    printb b "int id = _ltl2ba_sym_to_id();@ ";
+    (* The stuttering extension of the execution is accepted by the automaton *)
+    printb b "int accept_stutter =\
+              _ltl2ba_stutter_accept[id * %d + _ltl2ba_state_var];@ " a.nb_states;
+    printb b "%s(!accept_stutter, \"ERROR MAYBE\");@ " !O.checker_assert;
 
-  (* All continuation of the execution are rejected by the automaton *)
-  printb b "int valid_sure = _ltl2ba_surely_reject[_ltl2ba_state_var];@ ";
-  printb b "%s(valid_sure, \"VALID MAYBE\");@ @ " !O.checker_assert;
-
+    (* All continuation of the execution are rejected by the automaton *)
+    printb b "int valid_sure = _ltl2ba_surely_reject[_ltl2ba_state_var];@ ";
+    printb b "%s(valid_sure, \"VALID MAYBE\");@ @ " !O.checker_assert;
+  end;
   printb b "}@.\n"
 
 
@@ -270,10 +271,13 @@ let print_c_automaton (a: automaton) =
   let v_list = A.fold_vertex List.cons a.graph [] in
   let v_list = List.sort Node.compare v_list in
   print_c_transition_function a;
-  print_c_surely_reject_table a v_list;
-  print_c_surely_accept_table a v_list;
-  print_c_stutter_accept_table a v_list;
-  print_c_sym_to_id_function a;
+
+  if a.nb_states <> 0 then begin
+    print_c_surely_reject_table  a v_list;
+    print_c_surely_accept_table a v_list;
+    print_c_stutter_accept_table a v_list;
+    print_c_sym_to_id_function a;
+  end;
   print_c_conclusion_function a;
 
   B.contents buffer
@@ -283,13 +287,13 @@ let print_c_automaton (a: automaton) =
 let insert_automaton_prototype (cil: file) =
   let void_void_type = Baproductutils.mkFunctionType voidType [] in
   let int_void_type = Baproductutils.mkFunctionType intType [] in
-  let _ = findOrCreateFunc cil "_ltl2ba_result" void_void_type in
   let _ = findOrCreateFunc cil "_ltl2ba_transition" void_void_type in
+  let _ = findOrCreateFunc cil "_ltl2ba_result" void_void_type in
   let _ = findOrCreateFunc cil "_ltl2ba_sym_to_id" int_void_type in
   ()
 
 let insert_automaton_variable (cil: file) (a: automaton) =
-  let state_var_id = a.init_state.id in
+  let state_var_id = a.init_state_id in
   let state_var = makeGlobalVar "_ltl2ba_state_var" intType  in
   let state_var_def = GVar(state_var, (Baproductutils.mkIntInit state_var_id),
                            locUnknown)

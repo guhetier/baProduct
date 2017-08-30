@@ -33,7 +33,7 @@ type automaton = {
   nb_states: int;
   nb_sym: int;
   symbols: (string, int) H.t;
-  init_state: Node.t;
+  init_state_id: int;
   graph: A.t;
 }
 
@@ -86,14 +86,14 @@ let from_json (json: J.json) : automaton =
   let graph = List.fold_left A.add_edge_e graph edges in
 
   (* Get the first node back *)
-  let init_id = json |> member "init_state" |> to_int in
-  let init_state = try
-      A.iter_vertex
-        (fun v -> if v.id = init_id then raise (NodeFound v)) graph;
-      raise Not_found;
-    with | NodeFound v -> v
-         | Not_found -> E.s (E.error "Initial node not found")
-  in
+  let init_state_id = json |> member "init_state" |> to_int in
+  (* let init_state = try *)
+  (*     A.iter_vertex *)
+  (*       (fun v -> if v.id = init_id then raise (NodeFound v)) graph; *)
+  (*     raise Not_found; *)
+  (*   with | NodeFound v -> v *)
+  (*        | Not_found -> E.s (E.error "Initial node not found") *)
+  (* in *)
   let nb_sym = json |> member "nb_sym" |> to_int in
   let symbols = H.create nb_sym in
   let sym_list = List.map to_string (json |> member "symbols" |> to_list) in
@@ -102,7 +102,7 @@ let from_json (json: J.json) : automaton =
     nb_states = json |> member "nb_state" |> to_int;
     nb_sym = nb_sym;
     symbols = symbols;
-    init_state = init_state;
+    init_state_id = init_state_id;
     graph = graph;
   }
 
