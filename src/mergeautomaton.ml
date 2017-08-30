@@ -287,8 +287,8 @@ let print_c_automaton (a: automaton) =
 let insert_automaton_prototype (cil: file) =
   let void_void_type = Baproductutils.mkFunctionType voidType [] in
   let int_void_type = Baproductutils.mkFunctionType intType [] in
-  let _ = findOrCreateFunc cil "_ltl2ba_transition" void_void_type in
   let _ = findOrCreateFunc cil "_ltl2ba_result" void_void_type in
+  let _ = findOrCreateFunc cil "_ltl2ba_transition" void_void_type in
   let _ = findOrCreateFunc cil "_ltl2ba_sym_to_id" int_void_type in
   ()
 

@@ -5,8 +5,8 @@ void __ESBMC_atomic_end(void) ;
 void __ESBMC_atomic_begin(void) ;
 int _ltl2ba_state_var  =    4197584;
 int _ltl2ba_sym_to_id(void) ;
-void _ltl2ba_result(void) ;
 void _ltl2ba_transition(void) ;
+void _ltl2ba_result(void) ;
 #line 2 "/home/nephe/Documents/Research/dev/baProduct/test/automaton_empty/automaton_empty.c"
 int main(void) 
 { 
