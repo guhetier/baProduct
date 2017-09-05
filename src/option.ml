@@ -11,15 +11,26 @@ let verbose = ref false
 let debug = ref false
 let model_checker = ref "esbmc"
 
-let checker_assert = ref "__ESBMC_assert"
-let checker_assume = ref "__ESBMC_assume"
-let checker_atomic_begin = ref "__ESBMC_atomic_begin"
-let checker_atomic_end = ref "__ESBMC_atomic_end"
-let checker_non_det = ref "nondet_uint"
+let checker_assert = ref ""
+let checker_assume = ref ""
+let checker_atomic_begin = ref ""
+let checker_atomic_end = ref ""
+let checker_non_det = ref ""
 
 let init_model_checker_cmd mc =
   match mc with
-  | "esbmc" -> ()
+  | "esbmc" ->
+    checker_assert := "__ESBMC_assert";
+    checker_assume := "__ESBMC_assume";
+    checker_atomic_begin := "__ESBMC_atomic_begin";
+    checker_atomic_end := "__ESBMC_atomic_end";
+    checker_non_det := "nondet_uint"
+  | "cbmc" ->
+    checker_assert := "__CPROVER_assert";
+    checker_assume := "__CPROVER_assume";
+    checker_atomic_begin := "__CPROVER_atomic_begin";
+    checker_atomic_end := "__CPROVER_atomic_end";
+    checker_non_det := "nondet_uint"
   | _ -> E.s (E.error "The model checker %s is not supported." mc)
 
 let argSpec = [

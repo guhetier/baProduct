@@ -22,6 +22,7 @@ def main():
     parser = argparse.ArgumentParser(description='Instrument a program for LTL model checking')
     parser.add_argument("-s", "--spec", required=True, help="Specification file")
     parser.add_argument("-i", "--input", required=True, help="Input file")
+    parser.add_argument("-o", "--output", help="Output file")
     parser.add_argument("-t", "--tmp_folder", help="Temporary file folder")
     parser.add_argument("--baproduct", dest="remainder", nargs=argparse.REMAINDER)
 
@@ -32,6 +33,8 @@ def main():
 
     if not args.tmp_folder:
         args.tmp_folder = TMP_FILE_FOLDER_DEFAULT
+    if not args.output:
+        args.output = os.path.splitext(args.input)[0] + "_instr.c"
     if not os.path.exists(args.tmp_folder):
         os.makedirs(args.tmp_folder)
 
@@ -45,13 +48,12 @@ def main():
         exit(1)
 
     print("Calling baProduct...")
-    output = os.path.splitext(args.input)[0] + "_instr.c"
     try:
         subprocess.run(
             [BA_PRODUCT_PATH,
              '-i', preproc_file,
              '-s', args.spec,
-             '-o', output,
+             '-o', args.output,
              '--dot',
              '--tmp', args.tmp_folder,
              '--ltl2ba', LTL2BA_PATH,
@@ -61,7 +63,7 @@ def main():
         print("Error while instrumenting the file.")
         exit(1)
 
-    print("Result printed to file {}".format(output))
+    print("Result printed to file {}".format(args.output))
 
 if __name__ == "__main__":
     main()

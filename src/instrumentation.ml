@@ -10,8 +10,6 @@ module O = Option
 let cilSpec : CS.cil_prop_state = CS.empty
 
 let transition_fun_str = "_ltl2ba_transition"
-let atomic_begin_fun_str = !O.checker_atomic_begin
-let atomic_end_fun_str = !O.checker_atomic_end
 
 let dummy_fun = makeVarinfo false "_dummy" voidType
 
@@ -378,9 +376,9 @@ let add_instrumentation (f: file) (cs: CS.cil_prop list) =
   instrFun.transition <-
     findOrCreateFunc f transition_fun_str (mkFunctionType voidType []);
   instrFun.atomic_begin <-
-    findOrCreateFunc f atomic_begin_fun_str (mkFunctionType voidType []);
+    findOrCreateFunc f !O.checker_atomic_begin (mkFunctionType voidType []);
   instrFun.atomic_end <-
-    findOrCreateFunc f atomic_end_fun_str (mkFunctionType voidType []);
+    findOrCreateFunc f !O.checker_atomic_end (mkFunctionType voidType []);
 
   (* Instrument every function of the file *)
   iterGlobals f (only_functions (process_function cs));
