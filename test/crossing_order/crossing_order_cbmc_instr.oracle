@@ -232,98 +232,98 @@ void *signal1(void *d )
   pthread_mutex_unlock(& m1);
   }
   {
-#line 50
+#line 61
   __CPROVER_atomic_begin();
-#line 50
+#line 61
   _ltl2ba_atomic_green1 = (_Bool)0;
-#line 50
+#line 61
   _ltl2ba_atomic_orange1 = (_Bool)0;
-#line 50
+#line 61
   _ltl2ba_atomic_red1 = (_Bool)0;
-#line 50
+#line 61
   _ltl2ba_active_green1 = (_Bool)0;
-#line 50
+#line 61
   _ltl2ba_active_orange1 = (_Bool)0;
-#line 50
+#line 61
   _ltl2ba_active_red1 = (_Bool)0;
-#line 50
+#line 61
   _ltl2ba_transition();
-#line 50
+#line 61
   __CPROVER_atomic_end();
   e1: 
-#line 50
+#line 61
   pthread_exit((void *)0);
   }
 }
 }
-#line 53 "/home/nephe/Documents/Research/dev/baProduct/test/crossing_order/crossing_order.c"
+#line 64 "/home/nephe/Documents/Research/dev/baProduct/test/crossing_order/crossing_order.c"
 void *signal2(void *d ) 
 { 
   int status ;
 
   {
-#line 54
+#line 65
   status = 2;
   b2: 
-#line 57
+#line 68
   pthread_mutex_lock(& m1);
-#line 58
+#line 69
   status = 0;
-#line 59
+#line 70
   printf((char const   */* __restrict  */)"2 -> GREEN\n");
-#line 60
+#line 71
   sleep(2U);
-#line 61
+#line 72
   status = 1;
-#line 62
+#line 73
   printf((char const   */* __restrict  */)"2 -> ORANGE\n");
-#line 63
+#line 74
   sleep(1U);
-#line 64
+#line 75
   status = 2;
-#line 65
+#line 76
   printf((char const   */* __restrict  */)"2 -> RED\n");
-#line 66
+#line 77
   pthread_mutex_unlock(& m2);
   e2: 
-#line 70
+#line 92
   pthread_exit((void *)0);
 }
 }
-#line 73 "/home/nephe/Documents/Research/dev/baProduct/test/crossing_order/crossing_order.c"
+#line 95 "/home/nephe/Documents/Research/dev/baProduct/test/crossing_order/crossing_order.c"
 int main(void) 
 { 
   pthread_t t1 ;
   pthread_t t2 ;
 
   {
-#line 76
+#line 98
   printf((char const   */* __restrict  */)"Start\n");
-#line 78
+#line 100
   pthread_mutex_lock(& m1);
-#line 79
+#line 101
   pthread_mutex_lock(& m2);
-#line 81
+#line 103
   printf((char const   */* __restrict  */)"Create\n");
-#line 82
+#line 104
   pthread_create((pthread_t */* __restrict  */)(& t1), (pthread_attr_t const   */* __restrict  */)((void *)0),
                  & signal1, (void */* __restrict  */)((void *)0));
-#line 83
+#line 105
   pthread_create((pthread_t */* __restrict  */)(& t2), (pthread_attr_t const   */* __restrict  */)((void *)0),
                  & signal2, (void */* __restrict  */)((void *)0));
-#line 84
+#line 106
   printf((char const   */* __restrict  */)"Join\n");
-#line 86
+#line 108
   pthread_join(t1, (void **)((void *)0));
-#line 87
+#line 109
   pthread_join(t2, (void **)((void *)0));
-#line 89
+#line 111
   printf((char const   */* __restrict  */)"End\n");
   {
   __CPROVER_atomic_begin();
   _ltl2ba_result();
   __CPROVER_atomic_end();
-#line 91
+#line 113
   return (0);
   }
 }

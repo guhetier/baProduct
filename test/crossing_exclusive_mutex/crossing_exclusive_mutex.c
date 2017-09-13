@@ -22,10 +22,10 @@ void * signal1(void* d) {
     int status = GREEN;
  b1:
     printf("1 -> GREEN\n");
-    /* sleep(2); */
+    sleep(2);
     status = ORANGE;
     printf("1 -> ORANGE\n");
-    /* sleep(1); */
+    sleep(1);
     status = RED;
     printf("1 -> RED\n");
     pthread_mutex_unlock(&m1);
@@ -33,15 +33,15 @@ void * signal1(void* d) {
     pthread_mutex_lock(&m2);
     status = GREEN;
     printf("1 -> GREEN\n");
-    /* sleep(2); */
-    /* status = ORANGE; */
-    /* printf("1 -> ORANGE\n"); */
-    /* sleep(1); */
-    /* status = RED; */
-    /* printf("1 -> RED\n"); */
-    /* sem_post(&sem1); */
+    sleep(2);
+    status = ORANGE;
+    printf("1 -> ORANGE\n");
+    sleep(1);
+    status = RED;
+    printf("1 -> RED\n");
+    pthread_mutex_unlock(&m1);
 
-    /* sem_wait(&sem2); */
+    /* pthread_mutex_lock(&m2); */
     /* status = GREEN; */
     /* printf("1 -> GREEN\n"); */
     /* sleep(2); */
@@ -50,19 +50,20 @@ void * signal1(void* d) {
     /* sleep(1); */
     /* status = RED; */
     /* printf("1 -> RED\n"); */
-    /* sem_post(&sem1); */
+    /* pthread_mutex_unlock(&m1); */
  e1:
     pthread_exit(NULL);
 }
 
 void * signal2(void* d) {
     int status = RED;
+    printf("2 -> RED\n");
 
  b2:
     pthread_mutex_lock(&m1);
     status = GREEN;
     printf("2 -> GREEN\n");
-    /* sleep(2); */
+    sleep(2);
     status = ORANGE;
     printf("2 -> ORANGE\n");
     sleep(1);
@@ -70,8 +71,7 @@ void * signal2(void* d) {
     printf("2 -> RED\n");
     pthread_mutex_unlock(&m2);
 
-
-    /* sem_wait(&sem1); */
+    /* pthread_mutex_lock(&m1); */
     /* status = GREEN; */
     /* printf("2 -> GREEN\n"); */
     /* sleep(2); */
@@ -80,7 +80,7 @@ void * signal2(void* d) {
     /* sleep(1); */
     /* status = RED; */
     /* printf("2 -> RED\n"); */
-    /* sem_post(&sem2); */
+    /* pthread_mutex_unlock(&m2); */
  e2:
 
     pthread_exit(NULL);
@@ -90,9 +90,6 @@ int main() {
     pthread_t t1, t2;
 
     printf("Start\n");
-
-    /* sem_init(&sem1, 0, 0); */
-    /* sem_init(&sem2, 0, 0); */
 
     pthread_mutex_lock(&m1);
     pthread_mutex_lock(&m2);

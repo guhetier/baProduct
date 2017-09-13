@@ -113,6 +113,8 @@ void *signal1(void *d )
   b1: 
 #line 24
   printf((char const   */* __restrict  */)"1 -> GREEN\n");
+#line 25
+  sleep(2U);
 #line 26
   __CPROVER_atomic_begin();
 #line 26
@@ -125,6 +127,8 @@ void *signal1(void *d )
   __CPROVER_atomic_end();
 #line 27
   printf((char const   */* __restrict  */)"1 -> ORANGE\n");
+#line 28
+  sleep(1U);
 #line 29
   __CPROVER_atomic_begin();
 #line 29
@@ -153,6 +157,36 @@ void *signal1(void *d )
   __CPROVER_atomic_end();
 #line 35
   printf((char const   */* __restrict  */)"1 -> GREEN\n");
+#line 36
+  sleep(2U);
+#line 37
+  __CPROVER_atomic_begin();
+#line 37
+  status = 1;
+#line 37
+  _ltl2ba_atomic_red1 = isRed1(*_ltl2ba_pointer_signal1_status);
+#line 37
+  _ltl2ba_transition();
+#line 37
+  __CPROVER_atomic_end();
+#line 38
+  printf((char const   */* __restrict  */)"1 -> ORANGE\n");
+#line 39
+  sleep(1U);
+#line 40
+  __CPROVER_atomic_begin();
+#line 40
+  status = 2;
+#line 40
+  _ltl2ba_atomic_red1 = isRed1(*_ltl2ba_pointer_signal1_status);
+#line 40
+  _ltl2ba_transition();
+#line 40
+  __CPROVER_atomic_end();
+#line 41
+  printf((char const   */* __restrict  */)"1 -> RED\n");
+#line 42
+  pthread_mutex_unlock(& m1);
   }
   {
 #line 55
@@ -179,61 +213,65 @@ void *signal2(void *d )
   {
 #line 59
   status = 2;
+#line 60
+  printf((char const   */* __restrict  */)"2 -> RED\n");
   {
-#line 62
+#line 63
   __CPROVER_atomic_begin();
-#line 62
+#line 63
   _ltl2ba_pointer_signal2_status = & status;
-#line 62
+#line 63
   _ltl2ba_atomic_red2 = isRed2(*_ltl2ba_pointer_signal2_status);
-#line 62
+#line 63
   _ltl2ba_active_red2 = (_Bool)1;
-#line 62
+#line 63
   _ltl2ba_transition();
-#line 62
+#line 63
   __CPROVER_atomic_end();
   b2: 
-#line 62
+#line 63
   pthread_mutex_lock(& m1);
-#line 63
-  __CPROVER_atomic_begin();
-#line 63
-  status = 0;
-#line 63
-  _ltl2ba_atomic_red2 = isRed2(*_ltl2ba_pointer_signal2_status);
-#line 63
-  _ltl2ba_transition();
-#line 63
-  __CPROVER_atomic_end();
 #line 64
+  __CPROVER_atomic_begin();
+#line 64
+  status = 0;
+#line 64
+  _ltl2ba_atomic_red2 = isRed2(*_ltl2ba_pointer_signal2_status);
+#line 64
+  _ltl2ba_transition();
+#line 64
+  __CPROVER_atomic_end();
+#line 65
   printf((char const   */* __restrict  */)"2 -> GREEN\n");
 #line 66
-  __CPROVER_atomic_begin();
-#line 66
-  status = 1;
-#line 66
-  _ltl2ba_atomic_red2 = isRed2(*_ltl2ba_pointer_signal2_status);
-#line 66
-  _ltl2ba_transition();
-#line 66
-  __CPROVER_atomic_end();
+  sleep(2U);
 #line 67
-  printf((char const   */* __restrict  */)"2 -> ORANGE\n");
-#line 68
-  sleep(1U);
-#line 69
   __CPROVER_atomic_begin();
-#line 69
-  status = 2;
-#line 69
+#line 67
+  status = 1;
+#line 67
   _ltl2ba_atomic_red2 = isRed2(*_ltl2ba_pointer_signal2_status);
-#line 69
+#line 67
   _ltl2ba_transition();
-#line 69
+#line 67
   __CPROVER_atomic_end();
+#line 68
+  printf((char const   */* __restrict  */)"2 -> ORANGE\n");
+#line 69
+  sleep(1U);
 #line 70
-  printf((char const   */* __restrict  */)"2 -> RED\n");
+  __CPROVER_atomic_begin();
+#line 70
+  status = 2;
+#line 70
+  _ltl2ba_atomic_red2 = isRed2(*_ltl2ba_pointer_signal2_status);
+#line 70
+  _ltl2ba_transition();
+#line 70
+  __CPROVER_atomic_end();
 #line 71
+  printf((char const   */* __restrict  */)"2 -> RED\n");
+#line 72
   pthread_mutex_unlock(& m2);
   }
   {
@@ -262,31 +300,31 @@ int main(void)
   {
 #line 92
   printf((char const   */* __restrict  */)"Start\n");
-#line 97
+#line 94
   pthread_mutex_lock(& m1);
-#line 98
+#line 95
   pthread_mutex_lock(& m2);
-#line 100
+#line 97
   printf((char const   */* __restrict  */)"Create\n");
-#line 101
+#line 98
   pthread_create((pthread_t */* __restrict  */)(& t1), (pthread_attr_t const   */* __restrict  */)((void *)0),
                  & signal1, (void */* __restrict  */)((void *)0));
-#line 102
+#line 99
   pthread_create((pthread_t */* __restrict  */)(& t2), (pthread_attr_t const   */* __restrict  */)((void *)0),
                  & signal2, (void */* __restrict  */)((void *)0));
-#line 103
+#line 100
   printf((char const   */* __restrict  */)"Join\n");
-#line 105
+#line 102
   pthread_join(t1, (void **)((void *)0));
-#line 106
+#line 103
   pthread_join(t2, (void **)((void *)0));
-#line 108
+#line 105
   printf((char const   */* __restrict  */)"End\n");
   {
   __CPROVER_atomic_begin();
   _ltl2ba_result();
   __CPROVER_atomic_end();
-#line 110
+#line 107
   return (0);
   }
 }

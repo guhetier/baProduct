@@ -46,6 +46,17 @@ void * signal1(void* d) {
     printf("1 -> RED\n");
     pthread_mutex_unlock(&m1);
 
+    /* pthread_mutex_lock(&m2); */
+    /* status = GREEN; */
+    /* printf("1 -> GREEN\n"); */
+    /* sleep(2); */
+    /* status = ORANGE; */
+    /* printf("1 -> ORANGE\n"); */
+    /* sleep(1); */
+    /* status = RED; */
+    /* printf("1 -> RED\n"); */
+    /* pthread_mutex_unlock(&m1); */
+
  e1:
     pthread_exit(NULL);
 }
@@ -64,6 +75,17 @@ void * signal2(void* d) {
     status = RED;
     printf("2 -> RED\n");
     pthread_mutex_unlock(&m2);
+
+    /* pthread_mutex_lock(&m1); */
+    /* status = GREEN; */
+    /* printf("2 -> GREEN\n"); */
+    /* sleep(2); */
+    /* status = ORANGE; */
+    /* printf("2 -> ORANGE\n"); */
+    /* sleep(1); */
+    /* status = RED; */
+    /* printf("2 -> RED\n"); */
+    /* pthread_mutex_unlock(&m2); */
 
  e2:
 

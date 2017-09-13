@@ -189,140 +189,140 @@ void *signal1(void *d )
   pthread_mutex_unlock(& m1);
   }
   {
-#line 46
+#line 56
   __ESBMC_atomic_begin();
-#line 46
+#line 56
   _ltl2ba_atomic_green1 = (_Bool)0;
-#line 46
+#line 56
   _ltl2ba_active_green1 = (_Bool)0;
-#line 46
+#line 56
   _ltl2ba_transition();
-#line 46
+#line 56
   __ESBMC_atomic_end();
   e1: 
-#line 46
+#line 56
   pthread_exit((void *)0);
   }
 }
 }
-#line 49 "/home/nephe/Documents/Research/dev/baProduct/test/crossing_GF_green/crossing_GF_green.c"
+#line 59 "/home/nephe/Documents/Research/dev/baProduct/test/crossing_GF_green/crossing_GF_green.c"
 void *signal2(void *d ) 
 { 
   int status ;
 
   {
-#line 50
+#line 60
   status = 2;
   {
-#line 53
+#line 63
   __ESBMC_atomic_begin();
-#line 53
+#line 63
   _ltl2ba_pointer_signal2_status = & status;
-#line 53
+#line 63
   _ltl2ba_atomic_green2 = isGreen2(*_ltl2ba_pointer_signal2_status);
-#line 53
+#line 63
   _ltl2ba_active_green2 = (_Bool)1;
-#line 53
+#line 63
   _ltl2ba_transition();
-#line 53
+#line 63
   __ESBMC_atomic_end();
   b2: 
-#line 53
+#line 63
   pthread_mutex_lock(& m1);
-#line 54
+#line 64
   __ESBMC_atomic_begin();
-#line 54
+#line 64
   status = 0;
-#line 54
+#line 64
   _ltl2ba_atomic_green2 = isGreen2(*_ltl2ba_pointer_signal2_status);
-#line 54
+#line 64
   _ltl2ba_transition();
-#line 54
+#line 64
   __ESBMC_atomic_end();
-#line 55
+#line 65
   printf((char const   */* __restrict  */)"2 -> GREEN\n");
-#line 56
+#line 66
   sleep(2U);
-#line 57
+#line 67
   __ESBMC_atomic_begin();
-#line 57
+#line 67
   status = 1;
-#line 57
+#line 67
   _ltl2ba_atomic_green2 = isGreen2(*_ltl2ba_pointer_signal2_status);
-#line 57
+#line 67
   _ltl2ba_transition();
-#line 57
+#line 67
   __ESBMC_atomic_end();
-#line 58
+#line 68
   printf((char const   */* __restrict  */)"2 -> ORANGE\n");
-#line 59
+#line 69
   sleep(1U);
-#line 60
+#line 70
   __ESBMC_atomic_begin();
-#line 60
+#line 70
   status = 2;
-#line 60
+#line 70
   _ltl2ba_atomic_green2 = isGreen2(*_ltl2ba_pointer_signal2_status);
-#line 60
+#line 70
   _ltl2ba_transition();
-#line 60
+#line 70
   __ESBMC_atomic_end();
-#line 61
+#line 71
   printf((char const   */* __restrict  */)"2 -> RED\n");
-#line 62
+#line 72
   pthread_mutex_unlock(& m2);
   }
   {
-#line 66
+#line 86
   __ESBMC_atomic_begin();
-#line 66
+#line 86
   _ltl2ba_atomic_green2 = (_Bool)0;
-#line 66
+#line 86
   _ltl2ba_active_green2 = (_Bool)0;
-#line 66
+#line 86
   _ltl2ba_transition();
-#line 66
+#line 86
   __ESBMC_atomic_end();
   e2: 
-#line 66
+#line 86
   pthread_exit((void *)0);
   }
 }
 }
-#line 69 "/home/nephe/Documents/Research/dev/baProduct/test/crossing_GF_green/crossing_GF_green.c"
+#line 89 "/home/nephe/Documents/Research/dev/baProduct/test/crossing_GF_green/crossing_GF_green.c"
 int main(void) 
 { 
   pthread_t t1 ;
   pthread_t t2 ;
 
   {
-#line 72
+#line 92
   printf((char const   */* __restrict  */)"Start\n");
-#line 74
+#line 94
   pthread_mutex_lock(& m1);
-#line 75
+#line 95
   pthread_mutex_lock(& m2);
-#line 77
+#line 97
   printf((char const   */* __restrict  */)"Create\n");
-#line 78
+#line 98
   pthread_create((pthread_t */* __restrict  */)(& t1), (pthread_attr_t const   */* __restrict  */)((void *)0),
                  & signal1, (void */* __restrict  */)((void *)0));
-#line 79
+#line 99
   pthread_create((pthread_t */* __restrict  */)(& t2), (pthread_attr_t const   */* __restrict  */)((void *)0),
                  & signal2, (void */* __restrict  */)((void *)0));
-#line 80
+#line 100
   printf((char const   */* __restrict  */)"Join\n");
-#line 82
+#line 102
   pthread_join(t1, (void **)((void *)0));
-#line 83
+#line 103
   pthread_join(t2, (void **)((void *)0));
-#line 85
+#line 105
   printf((char const   */* __restrict  */)"End\n");
   {
   __ESBMC_atomic_begin();
   _ltl2ba_result();
   __ESBMC_atomic_end();
-#line 87
+#line 107
   return (0);
   }
 }

@@ -11,7 +11,10 @@ int fp2() {
 void* thread1(void* d) {
     int energy_stored = 100;
 
-    while(1) {
+    int i = 0;
+
+    while(i < 3) {
+        i++;
         for(; energy_stored > 0; energy_stored--);
     t1: energy_stored = 100;
     e1: ;
@@ -24,7 +27,10 @@ void* thread2(void* d) {
 
     int energy_stored = 100;
 
-    while(1) {
+    int i = 0;
+
+    while(i < 3) {
+        i++;
         for(; energy_stored > 0; energy_stored--);
     t2: energy_stored = 100;
     e2: ;

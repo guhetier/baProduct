@@ -33,13 +33,13 @@ void * signal1(void* d) {
     sem_wait(&sem2);
     status = GREEN;
     printf("1 -> GREEN\n");
-    /* sleep(2); */
-    /* status = ORANGE; */
-    /* printf("1 -> ORANGE\n"); */
-    /* sleep(1); */
-    /* status = RED; */
-    /* printf("1 -> RED\n"); */
-    /* sem_post(&sem1); */
+    sleep(2);
+    status = ORANGE;
+    printf("1 -> ORANGE\n");
+    sleep(1);
+    status = RED;
+    printf("1 -> RED\n");
+    sem_post(&sem1);
 
     /* sem_wait(&sem2); */
     /* status = GREEN; */

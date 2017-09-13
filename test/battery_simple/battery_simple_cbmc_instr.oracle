@@ -53,30 +53,35 @@ int fp2(void)
 void *thread1(void *d ) 
 { 
   int energy_stored ;
+  int i ;
 
   {
 #line 12
   energy_stored = 100;
 #line 14
-  while (1) {
-#line 15
+  i = 0;
+#line 16
+  while (i < 3) {
+#line 17
+    i ++;
+#line 18
     while (energy_stored > 0) {
-#line 15
+#line 18
       energy_stored --;
     }
     {
-#line 16
+#line 19
     __CPROVER_atomic_begin();
-#line 16
+#line 19
     _ltl2ba_atomic_p1 = fp1();
-#line 16
+#line 19
     _ltl2ba_active_p1 = (_Bool)1;
-#line 16
+#line 19
     _ltl2ba_transition();
-#line 16
+#line 19
     __CPROVER_atomic_end();
     t1: 
-#line 16
+#line 19
     energy_stored = 100;
     }
     {
@@ -91,38 +96,43 @@ void *thread1(void *d )
     }
     }
   }
-#line 20
+#line 23
   pthread_exit((void *)0);
 }
 }
-#line 23 "/home/nephe/Documents/Research/dev/baProduct/test/battery_simple/battery_simple.c"
+#line 26 "/home/nephe/Documents/Research/dev/baProduct/test/battery_simple/battery_simple.c"
 void *thread2(void *d ) 
 { 
   int energy_stored ;
+  int i ;
 
   {
-#line 25
+#line 28
   energy_stored = 100;
-#line 27
-  while (1) {
-#line 28
+#line 30
+  i = 0;
+#line 32
+  while (i < 3) {
+#line 33
+    i ++;
+#line 34
     while (energy_stored > 0) {
-#line 28
+#line 34
       energy_stored --;
     }
     {
-#line 29
+#line 35
     __CPROVER_atomic_begin();
-#line 29
+#line 35
     _ltl2ba_atomic_p2 = fp2();
-#line 29
+#line 35
     _ltl2ba_active_p2 = (_Bool)1;
-#line 29
+#line 35
     _ltl2ba_transition();
-#line 29
+#line 35
     __CPROVER_atomic_end();
     t2: 
-#line 29
+#line 35
     energy_stored = 100;
     }
     {
@@ -137,32 +147,32 @@ void *thread2(void *d )
     }
     }
   }
-#line 33
+#line 39
   pthread_exit((void *)0);
 }
 }
-#line 36 "/home/nephe/Documents/Research/dev/baProduct/test/battery_simple/battery_simple.c"
+#line 42 "/home/nephe/Documents/Research/dev/baProduct/test/battery_simple/battery_simple.c"
 int main(int argc , char **argv ) 
 { 
   pthread_t t1 ;
   pthread_t t2 ;
 
   {
-#line 39
+#line 45
   pthread_create((pthread_t */* __restrict  */)(& t1), (pthread_attr_t const   */* __restrict  */)((void *)0),
                  & thread1, (void */* __restrict  */)((void *)0));
-#line 40
+#line 46
   pthread_create((pthread_t */* __restrict  */)(& t2), (pthread_attr_t const   */* __restrict  */)((void *)0),
                  & thread2, (void */* __restrict  */)((void *)0));
-#line 41
+#line 47
   pthread_join(t1, (void **)((void *)0));
-#line 42
+#line 48
   pthread_join(t2, (void **)((void *)0));
   {
   __CPROVER_atomic_begin();
   _ltl2ba_result();
   __CPROVER_atomic_end();
-#line 43
+#line 49
   return (0);
   }
 }

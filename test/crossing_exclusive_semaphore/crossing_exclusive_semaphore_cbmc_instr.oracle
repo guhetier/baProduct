@@ -140,6 +140,36 @@ void *signal1(void *d )
   __CPROVER_atomic_end();
 #line 35
   printf((char const   */* __restrict  */)"1 -> GREEN\n");
+#line 36
+  sleep(2U);
+#line 37
+  __CPROVER_atomic_begin();
+#line 37
+  status = 1;
+#line 37
+  _ltl2ba_atomic_red1 = isRed1(*_ltl2ba_pointer_signal1_status);
+#line 37
+  _ltl2ba_transition();
+#line 37
+  __CPROVER_atomic_end();
+#line 38
+  printf((char const   */* __restrict  */)"1 -> ORANGE\n");
+#line 39
+  sleep(1U);
+#line 40
+  __CPROVER_atomic_begin();
+#line 40
+  status = 2;
+#line 40
+  _ltl2ba_atomic_red1 = isRed1(*_ltl2ba_pointer_signal1_status);
+#line 40
+  _ltl2ba_transition();
+#line 40
+  __CPROVER_atomic_end();
+#line 41
+  printf((char const   */* __restrict  */)"1 -> RED\n");
+#line 42
+  sem_post(& sem1);
   }
   {
 #line 55
