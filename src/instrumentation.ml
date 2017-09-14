@@ -34,8 +34,14 @@ let instrFun = {
    function. Global pointers to arguments are used, so the call is valid
    in all contexts as long as parameters are in the memory.*)
 let mkUpdateFunctionCall (prop: CS.cil_prop) (loc: location)=
-  let argLVal = List.map (fun v -> Lval(Mem (Lval(Var v, NoOffset)), NoOffset))
-      (CS.get_pointer_params prop) in
+  let argLVal = List.map
+      (fun v -> match CS.get_pointer v with
+         (* For a global variable, there is no pointer for an indirect access *)
+         | None -> Lval(Var (CS.get_var v), NoOffset)
+         (* For a local variable, we need to use a pointer for an indirect access *)
+         | Some(p) -> Lval(Mem (Lval(Var p, NoOffset)), NoOffset))
+      prop.CS.prop_params in
+      (* (CS.get_pointer_params prop) in *)
   Call (
     Some (Var (CS.get_truth_var prop), NoOffset),
     Lval (Var (CS.get_fun prop), NoOffset),
@@ -70,7 +76,13 @@ let mkSetPropState (prop: CS.cil_prop) (loc: location) (s: bool) =
 (* Build an instruction that set a parameter global pointer to the address of
    the parameter *)
 let mkSetPointer (var: CS.cil_prop_param) (loc: location) =
-  Set((Var (CS.get_pointer var), NoOffset),
+  let v = match CS.get_pointer var with
+    | Some v -> v
+    | None -> E.s (E.error "The variable %s has no associated global pointer,\
+                            but its initialization is requested."
+                     (let v =  CS.get_var var in v.vname))
+  in
+  Set((Var v, NoOffset),
       mkAddrOf (Var (CS.get_var var), NoOffset), loc)
 
 
@@ -163,8 +175,10 @@ class instrumentZoneChangeVisitor = object(self)
       (* Update pointers to variables used by a starting proposition *)
       (* TODO: Delete doublon here. Use a set or a better data structure ?? *)
       let init_var_pointer =
-        let vars = List.flatten
-            (List.map (fun p -> p.CS.prop_params) startingProps) in
+        let vars =
+          List.filter (fun p -> let v = CS.get_var p in not v.vglob)
+          (List.flatten (List.map (fun p -> p.CS.prop_params) startingProps))
+        in
         List.map (fun p -> mkSetPointer p loc) vars in
       (* Update the flag stating the proposition is active for starting
          propositions *)

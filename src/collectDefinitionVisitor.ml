@@ -94,11 +94,13 @@ let collectFromSpecification (f: file) (s: S.spec) =
       in
       match vopt with
       | None -> assert false
-      | Some vcil ->
+      | Some vcil when not vcil.vglob ->
         let vpointer = makeGlobalVar (pname) (TPtr(vcil.vtype, [])) in
         let initvp = {init = Some (makeZeroInit vpointer.vtype)} in
         f.globals <- GVar(vpointer, initvp, locUnknown)::f.globals;
-        H.add param_prop_cil var (vcil, vpointer)
+        H.add param_prop_cil var (vcil, Some(vpointer))
+      | Some vcil ->
+        H.add param_prop_cil var (vcil, None)
   in
   let collect_prop_fun (p: atomic_prop) =
     (* Collect the function defining the proposition value *)

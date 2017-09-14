@@ -10,7 +10,7 @@ module CS = CollectDefinitionVisitor
    a proposition *)
 type cil_prop_param = {
   var : C.varinfo; (* the variable used as a parameter *)
-  pointer : C.varinfo; (* a global pointer containing the address of the variable *)
+  pointer : C.varinfo option; (* a global pointer containing the address of the variable *)
 }
 
 (* Getters *)
