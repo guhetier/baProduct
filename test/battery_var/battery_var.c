@@ -1,7 +1,7 @@
 #include <pthread.h>
 
 int fp1(int e) {
-    return e > 10;
+    return e < 3;
 }
 
 int fp2(int e) {
@@ -9,7 +9,7 @@ int fp2(int e) {
 }
 
 void* thread1(void* d) {
-    int energy_stored = 20;
+    int energy_stored = 10;
     int i = 0;
 
     while(i < 3) {
@@ -17,7 +17,7 @@ void* thread1(void* d) {
     t1: while (energy_stored > 0) {
             energy_stored--;
         }
-    energy_stored = 20;
+    energy_stored = 10;
     e1: ;
     }
 
@@ -26,14 +26,14 @@ void* thread1(void* d) {
 
 void* thread2(void* d) {
 
-    int energy_stored = 20;
+    int energy_stored = 10;
     int i = 0;
     while(i < 3) {
         i++;
     t2: while (energy_stored > 0) {
             energy_stored--;
         }
-    energy_stored = 20;
+    energy_stored = 10;
     e2: ;
     }
 

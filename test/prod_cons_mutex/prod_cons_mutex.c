@@ -1,7 +1,7 @@
 
 #include <pthread.h>
 
-int nprod;
+int nprod = 0;
 pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;;
 
 int fp1(int nprod) {

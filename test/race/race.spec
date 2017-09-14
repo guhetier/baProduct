@@ -1,5 +1,5 @@
 {
-    "ltl": "G ((e2 && !e1) -> (G(e1 -> (FG(w1)))))",
+    "ltl": "G ((e2 && !e1) -> FG(w1))",
     "pa": [
         {
             "name": "e1",
@@ -19,7 +19,7 @@
             "name": "w1",
             "default": true,
             "expr": "w1",
-            "span": ["gb", "ge"],
+            "span": ["_begin", "_end"],
             "params": ["score"]
         }
     ]
