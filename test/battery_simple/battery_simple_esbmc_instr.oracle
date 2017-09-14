@@ -57,7 +57,7 @@ void *thread1(void *d )
 
   {
 #line 12
-  energy_stored = 100;
+  energy_stored = 10;
 #line 14
   i = 0;
 #line 16
@@ -82,7 +82,7 @@ void *thread1(void *d )
     __ESBMC_atomic_end();
     t1: 
 #line 19
-    energy_stored = 100;
+    energy_stored = 10;
     }
     {
     __ESBMC_atomic_begin();
@@ -108,7 +108,7 @@ void *thread2(void *d )
 
   {
 #line 28
-  energy_stored = 100;
+  energy_stored = 10;
 #line 30
   i = 0;
 #line 32
@@ -133,7 +133,7 @@ void *thread2(void *d )
     __ESBMC_atomic_end();
     t2: 
 #line 35
-    energy_stored = 100;
+    energy_stored = 10;
     }
     {
     __ESBMC_atomic_begin();

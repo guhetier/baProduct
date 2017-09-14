@@ -38,7 +38,7 @@ int fp1(int e )
 
   {
 #line 4
-  return (e > 10);
+  return (e < 3);
 }
 }
 #line 7 "/home/nephe/Documents/Research/dev/baProduct/test/battery_var/battery_var.c"
@@ -59,7 +59,7 @@ void *thread1(void *d )
 
   {
 #line 12
-  energy_stored = 20;
+  energy_stored = 10;
 #line 13
   i = 0;
 #line 15
@@ -97,7 +97,7 @@ void *thread1(void *d )
 #line 20
     __ESBMC_atomic_begin();
 #line 20
-    energy_stored = 20;
+    energy_stored = 10;
 #line 20
     _ltl2ba_atomic_p1 = fp1(*_ltl2ba_pointer_thread1_energy_stored);
 #line 20
@@ -128,7 +128,7 @@ void *thread2(void *d )
 
   {
 #line 29
-  energy_stored = 20;
+  energy_stored = 10;
 #line 30
   i = 0;
 #line 31
@@ -166,7 +166,7 @@ void *thread2(void *d )
 #line 36
     __ESBMC_atomic_begin();
 #line 36
-    energy_stored = 20;
+    energy_stored = 10;
 #line 36
     _ltl2ba_atomic_p2 = fp2(*_ltl2ba_pointer_thread2_energy_stored);
 #line 36

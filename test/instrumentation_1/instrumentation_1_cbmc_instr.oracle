@@ -2,11 +2,9 @@
 /* print_CIL_Input is false */
 
 int *_ltl2ba_pointer_t2_v4  =    (int *)0;
-int *_ltl2ba_pointer_g2  =    (int *)0;
 int *_ltl2ba_pointer_t1_v3  =    (int *)0;
 char *_ltl2ba_pointer_t1_v2  =    (char *)0;
 int *_ltl2ba_pointer_t1_v1  =    (int *)0;
-int *_ltl2ba_pointer_g1  =    (int *)0;
 int _ltl2ba_active_q  =    0;
 int _ltl2ba_atomic_q  =    0;
 int _ltl2ba_active_r  =    0;
@@ -125,12 +123,11 @@ void *t1(void *d )
 #line 26
   g1 = 8;
 #line 26
-  _ltl2ba_atomic_p = fp(*_ltl2ba_pointer_g1);
+  _ltl2ba_atomic_p = fp(g1);
 #line 26
   if (_ltl2ba_active_q) {
 #line 26
-    _ltl2ba_atomic_q = fq(*_ltl2ba_pointer_g1, *_ltl2ba_pointer_g2, *_ltl2ba_pointer_t1_v1,
-                          *_ltl2ba_pointer_t2_v4);
+    _ltl2ba_atomic_q = fq(g1, g2, *_ltl2ba_pointer_t1_v1, *_ltl2ba_pointer_t2_v4);
   }
 #line 26
   _ltl2ba_transition();
@@ -142,16 +139,11 @@ void *t1(void *d )
 #line 28
   __CPROVER_atomic_begin();
 #line 28
-  _ltl2ba_pointer_g1 = & g1;
-#line 28
-  _ltl2ba_pointer_g2 = & g2;
-#line 28
   _ltl2ba_pointer_t1_v1 = & v1;
 #line 28
   _ltl2ba_pointer_t2_v4 = & v4;
 #line 28
-  _ltl2ba_atomic_q = fq(*_ltl2ba_pointer_g1, *_ltl2ba_pointer_g2, *_ltl2ba_pointer_t1_v1,
-                        *_ltl2ba_pointer_t2_v4);
+  _ltl2ba_atomic_q = fq(g1, g2, *_ltl2ba_pointer_t1_v1, *_ltl2ba_pointer_t2_v4);
 #line 28
   _ltl2ba_active_q = (_Bool)1;
 #line 28
@@ -174,8 +166,7 @@ void *t1(void *d )
 #line 29
   g2 = 3;
 #line 29
-  _ltl2ba_atomic_q = fq(*_ltl2ba_pointer_g1, *_ltl2ba_pointer_g2, *_ltl2ba_pointer_t1_v1,
-                        *_ltl2ba_pointer_t2_v4);
+  _ltl2ba_atomic_q = fq(g1, g2, *_ltl2ba_pointer_t1_v1, *_ltl2ba_pointer_t2_v4);
 #line 29
   _ltl2ba_transition();
 #line 29
@@ -187,8 +178,7 @@ void *t1(void *d )
 #line 30
   _ltl2ba_atomic_r = fr(*_ltl2ba_pointer_t1_v1, *_ltl2ba_pointer_t1_v2, *_ltl2ba_pointer_t1_v3);
 #line 30
-  _ltl2ba_atomic_q = fq(*_ltl2ba_pointer_g1, *_ltl2ba_pointer_g2, *_ltl2ba_pointer_t1_v1,
-                        *_ltl2ba_pointer_t2_v4);
+  _ltl2ba_atomic_q = fq(g1, g2, *_ltl2ba_pointer_t1_v1, *_ltl2ba_pointer_t2_v4);
 #line 30
   _ltl2ba_transition();
 #line 30
@@ -213,8 +203,7 @@ void *t1(void *d )
 #line 33
   g2 = 5;
 #line 33
-  _ltl2ba_atomic_q = fq(*_ltl2ba_pointer_g1, *_ltl2ba_pointer_g2, *_ltl2ba_pointer_t1_v1,
-                        *_ltl2ba_pointer_t2_v4);
+  _ltl2ba_atomic_q = fq(g1, g2, *_ltl2ba_pointer_t1_v1, *_ltl2ba_pointer_t2_v4);
 #line 33
   _ltl2ba_transition();
 #line 33
@@ -250,12 +239,11 @@ void *t2(void *d )
 #line 40
   g1 = 4;
 #line 40
-  _ltl2ba_atomic_p = fp(*_ltl2ba_pointer_g1);
+  _ltl2ba_atomic_p = fp(g1);
 #line 40
   if (_ltl2ba_active_q) {
 #line 40
-    _ltl2ba_atomic_q = fq(*_ltl2ba_pointer_g1, *_ltl2ba_pointer_g2, *_ltl2ba_pointer_t1_v1,
-                          *_ltl2ba_pointer_t2_v4);
+    _ltl2ba_atomic_q = fq(g1, g2, *_ltl2ba_pointer_t1_v1, *_ltl2ba_pointer_t2_v4);
   }
 #line 40
   _ltl2ba_transition();
@@ -270,8 +258,7 @@ void *t2(void *d )
 #line 42
   if (_ltl2ba_active_q) {
 #line 42
-    _ltl2ba_atomic_q = fq(*_ltl2ba_pointer_g1, *_ltl2ba_pointer_g2, *_ltl2ba_pointer_t1_v1,
-                          *_ltl2ba_pointer_t2_v4);
+    _ltl2ba_atomic_q = fq(g1, g2, *_ltl2ba_pointer_t1_v1, *_ltl2ba_pointer_t2_v4);
   }
 #line 42
   _ltl2ba_transition();
@@ -286,8 +273,7 @@ void *t2(void *d )
 #line 44
   if (_ltl2ba_active_q) {
 #line 44
-    _ltl2ba_atomic_q = fq(*_ltl2ba_pointer_g1, *_ltl2ba_pointer_g2, *_ltl2ba_pointer_t1_v1,
-                          *_ltl2ba_pointer_t2_v4);
+    _ltl2ba_atomic_q = fq(g1, g2, *_ltl2ba_pointer_t1_v1, *_ltl2ba_pointer_t2_v4);
   }
 #line 44
   _ltl2ba_transition();
@@ -308,7 +294,7 @@ int main(void)
 #line 48
   __CPROVER_atomic_begin();
 #line 48
-  _ltl2ba_atomic_p = fp(*_ltl2ba_pointer_g1);
+  _ltl2ba_atomic_p = fp(g1);
 #line 48
   _ltl2ba_transition();
 #line 48
