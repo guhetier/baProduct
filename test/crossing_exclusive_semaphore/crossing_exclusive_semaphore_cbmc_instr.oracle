@@ -13,22 +13,22 @@ int _ltl2ba_state_var  =    0;
 int _ltl2ba_sym_to_id(void) ;
 void _ltl2ba_transition(void) ;
 void _ltl2ba_result(void) ;
-#line 60 "/usr/include/bits/pthreadtypes.h"
+#line 27 "/usr/include/bits/pthreadtypes.h"
 typedef unsigned long pthread_t;
-#line 63 "/usr/include/bits/pthreadtypes.h"
+#line 56 "/usr/include/bits/pthreadtypes.h"
 union pthread_attr_t {
    char __size[56] ;
    long __align ;
 };
-#line 69 "/usr/include/bits/pthreadtypes.h"
+#line 62 "/usr/include/bits/pthreadtypes.h"
 typedef union pthread_attr_t pthread_attr_t;
 #line 36 "/usr/include/bits/semaphore.h"
-union __anonunion_sem_t_31 {
+union __anonunion_sem_t_29 {
    char __size[32] ;
    long __align ;
 };
 #line 36 "/usr/include/bits/semaphore.h"
-typedef union __anonunion_sem_t_31 sem_t;
+typedef union __anonunion_sem_t_29 sem_t;
 #line 234 "/usr/include/pthread.h"
 extern  __attribute__((__nothrow__)) int ( __attribute__((__nonnull__(1,3))) pthread_create)(pthread_t * __restrict  __newthread ,
                                                                                              pthread_attr_t const   * __restrict  __attr ,
@@ -46,7 +46,7 @@ extern int sem_wait(sem_t *__sem ) ;
 extern  __attribute__((__nothrow__)) int sem_post(sem_t *__sem ) ;
 #line 447 "/usr/include/unistd.h"
 extern unsigned int sleep(unsigned int __seconds ) ;
-#line 365 "/usr/include/stdio.h"
+#line 318 "/usr/include/stdio.h"
 extern int printf(char const   * __restrict  __format  , ...) ;
 #line 11 "/home/nephe/Documents/Research/dev/baProduct/test/crossing_exclusive_semaphore/crossing_exclusive_semaphore.c"
 sem_t sem1  ;
